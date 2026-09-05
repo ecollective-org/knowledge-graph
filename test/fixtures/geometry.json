@@ -1,0 +1,220 @@
+{
+  "schemaVersion": "0.1.0",
+  "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
+  "generatedAt": "2026-09-05T04:12:07Z",
+  "domain": {
+    "ekgId": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+    "slug": "geometry", "previousSlugs": [], "type": "domain", "title": "Geometry",
+    "description": "Reasoning about shapes, transformations, and congruence in the plane, from precise definitions to proof.",
+    "icon": "📐", "order": 10,
+    "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+    "contributors": [], "tags": ["mathematics", "geometry"],
+    "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+      "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+  },
+  "nodes": [
+    {
+      "ekgId": "ekg:outcome:01JBX0DEFNTERMS00000000000", "slug": "define-geometric-terms",
+      "previousSlugs": [], "type": "outcome",
+      "title": "Define the basic objects of plane geometry",
+      "statement": "I can give precise definitions of angle, circle, perpendicular lines, parallel lines, and line segment, using the undefined notions of point, line, distance along a line, and distance around a circular arc.",
+      "description": "The vocabulary every later geometry outcome depends on.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "foundation",
+      "prerequisites": [],
+      "evidence": [
+        "Writes a definition of each term that a peer can use to decide whether a given figure is an example.",
+        "Sorts a set of figures into examples and non-examples of each term and justifies each choice."
+      ],
+      "alignments": [ { "framework": "NYS Next Generation Mathematics Learning Standards",
+        "frameworkId": "nys-nextgen-math", "code": "GEO-G.CO.1", "relation": "exact",
+        "url": "https://www.nysed.gov/standards-instruction/mathematics" } ],
+      "aliases": [], "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["definitions", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:outcome:01JBX1REPRESENT00000000000", "slug": "represent-transformations",
+      "previousSlugs": [], "type": "outcome", "title": "Represent transformations in the plane",
+      "statement": "I can represent transformations in the plane, describe them as functions that take points as inputs and give points as outputs, and compare transformations that preserve distance and angle to those that do not.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "foundation",
+      "prerequisites": ["ekg:outcome:01JBX0DEFNTERMS00000000000"],
+      "evidence": [
+        "Given a figure and a rule (for example, a reflection over a line), draws the image and labels corresponding points.",
+        "Sorts a set of transformations into those that preserve distance and angle and those that do not, with a one-sentence justification for each."
+      ],
+      "alignments": [ { "framework": "NYS Next Generation Mathematics Learning Standards",
+        "frameworkId": "nys-nextgen-math", "code": "GEO-G.CO.2", "relation": "exact",
+        "url": "https://www.nysed.gov/standards-instruction/mathematics" } ],
+      "aliases": [], "resourceIds": ["ekg:resource:01JBXGEGEBRA00000000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["transformations", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:outcome:01JBX2RGDMTNS0000000000000", "slug": "describe-rigid-motions",
+      "previousSlugs": [], "type": "outcome",
+      "title": "Describe and draw rotations, reflections, and translations",
+      "statement": "I can define rotations, reflections, and translations in terms of angles, circles, perpendicular lines, parallel lines, and line segments, and, given a figure and a rigid motion, draw the transformed figure and specify a sequence of rigid motions that carries one figure onto another.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "intermediate",
+      "prerequisites": ["ekg:outcome:01JBX1REPRESENT00000000000"],
+      "evidence": [
+        "States a definition of each rigid motion using the terms from the definitions outcome.",
+        "Given a figure and a rigid motion, draws the image accurately by hand or in free geometry software.",
+        "Given two congruent figures, writes a sequence of rigid motions carrying one onto the other."
+      ],
+      "alignments": [
+        { "framework": "NYS Next Generation Mathematics Learning Standards", "frameworkId": "nys-nextgen-math",
+          "code": "GEO-G.CO.4", "relation": "exact", "url": "https://www.nysed.gov/standards-instruction/mathematics" },
+        { "framework": "NYS Next Generation Mathematics Learning Standards", "frameworkId": "nys-nextgen-math",
+          "code": "GEO-G.CO.5", "relation": "exact", "url": "https://www.nysed.gov/standards-instruction/mathematics" }
+      ],
+      "aliases": ["Rigid transformations"], "resourceIds": ["ekg:resource:01JBXGEGEBRA00000000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["rigid-motions", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:outcome:01JBX3PRVCNGRNCE0000000000", "slug": "prove-congruence-with-rigid-motions",
+      "previousSlugs": [], "type": "outcome", "title": "Use rigid motions to decide and prove congruence",
+      "statement": "I can use the definition of congruence in terms of rigid motions to decide whether two figures are congruent, and to show that two triangles are congruent if and only if corresponding pairs of sides and corresponding pairs of angles are congruent.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "advanced",
+      "prerequisites": ["ekg:outcome:01JBX2RGDMTNS0000000000000"],
+      "evidence": [
+        "Given two figures, decides whether they are congruent and justifies the decision with a rigid motion or with an argument that none exists.",
+        "Writes a proof that two triangles are congruent by exhibiting a sequence of rigid motions, and explains why corresponding parts are therefore congruent."
+      ],
+      "alignments": [
+        { "framework": "NYS Next Generation Mathematics Learning Standards", "frameworkId": "nys-nextgen-math",
+          "code": "GEO-G.CO.6", "relation": "exact", "url": "https://www.nysed.gov/standards-instruction/mathematics" },
+        { "framework": "NYS Next Generation Mathematics Learning Standards", "frameworkId": "nys-nextgen-math",
+          "code": "GEO-G.CO.7", "relation": "exact", "url": "https://www.nysed.gov/standards-instruction/mathematics" }
+      ],
+      "aliases": [], "resourceIds": ["ekg:resource:01JBXREGENTSPAST0000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["proof", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:outcome:01JBX4TRNGCRTRA00000000000", "slug": "triangle-congruence-criteria",
+      "previousSlugs": [], "type": "outcome", "title": "Prove triangles congruent with SSS, SAS, and ASA",
+      "statement": "I can explain how the SSS, SAS, and ASA criteria for triangle congruence follow from the definition of congruence in terms of rigid motions, and use them to prove two triangles congruent.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "advanced",
+      "prerequisites": ["ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "evidence": [],
+      "alignments": [ { "framework": "NYS Next Generation Mathematics Learning Standards",
+        "frameworkId": "nys-nextgen-math", "code": "GEO-G.CO.8", "relation": "exact",
+        "url": "https://www.nysed.gov/standards-instruction/mathematics" } ],
+      "aliases": ["SSS, SAS, ASA", "Triangle congruence theorems", "Triangle congruence postulates"],
+      "resourceIds": [],
+      "status": "stub", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["proof", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:course:01JBX5CRSCNGRNCE0000000000", "slug": "congruence-through-rigid-motions",
+      "previousSlugs": [], "type": "course", "title": "Congruence Through Rigid Motions",
+      "description": "Go from precise geometric definitions to proving triangles congruent with rigid motions, using only free resources.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
+                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
+      "estimatedHours": 12, "formats": ["video", "interactive", "practice", "project"],
+      "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000", "ekg:resource:01JBXGEGEBRA00000000000000",
+                      "ekg:resource:01JBXNYSSTANDARDSPDF000000", "ekg:resource:01JBXREGENTSPAST0000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:assessment:01JBX6TASKRGDMTN0000000000", "slug": "rigid-motion-congruence-task",
+      "previousSlugs": [], "type": "assessment", "title": "Rigid Motion Congruence Task",
+      "description": "A performance task in which the learner decides whether pairs of figures are congruent and proves it with rigid motions.",
+      "kind": "performance-task", "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "evidenceRequirements": [
+        "A portfolio of five figure pairs, at least two congruent and at least two not, designed by the learner.",
+        "For each congruent pair, an explicit sequence of rigid motions carrying one figure onto the other, drawn and described.",
+        "For each non-congruent pair, an explanation of why no rigid motion can exist.",
+        "One written proof that two given triangles are congruent, concluding that corresponding parts are congruent."
+      ],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:credential:01JBX7BADGECNGRNC000000000", "slug": "congruence-and-rigid-motions",
+      "previousSlugs": [], "type": "credential", "title": "Congruence and Rigid Motions",
+      "description": "The holder can define the objects of plane geometry, represent and perform rigid motions, and prove figures congruent using rigid motions.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
+                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
+      "format": "Open Badges 3.0 (W3C Verifiable Credential)",
+      "issuerRequirements": [
+        "Assess with the adopted version of the Rigid Motion Congruence Task, scored Proficient by a reviewer who did not teach the learner.",
+        "Retain the learner's evidence for verification, with the learner's consent, and give the learner a copy.",
+        "Issue as an Open Badges 3.0 credential referencing this credential's id and version."
+      ],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    }
+  ],
+  "edges": [
+    { "type": "prerequisite", "from": "ekg:outcome:01JBX1REPRESENT00000000000", "to": "ekg:outcome:01JBX0DEFNTERMS00000000000", "targetDomain": "geometry" },
+    { "type": "prerequisite", "from": "ekg:outcome:01JBX2RGDMTNS0000000000000", "to": "ekg:outcome:01JBX1REPRESENT00000000000", "targetDomain": "geometry" },
+    { "type": "prerequisite", "from": "ekg:outcome:01JBX3PRVCNGRNCE0000000000", "to": "ekg:outcome:01JBX2RGDMTNS0000000000000", "targetDomain": "geometry" },
+    { "type": "prerequisite", "from": "ekg:outcome:01JBX4TRNGCRTRA00000000000", "to": "ekg:outcome:01JBX3PRVCNGRNCE0000000000", "targetDomain": "geometry" }
+  ],
+  "resources": [
+    { "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000", "title": "Khan Academy, High School Geometry",
+      "url": "https://www.khanacademy.org/math/geometry", "kind": "video", "cost": "free",
+      "provider": "Khan Academy", "modality": "watch", "language": "en", "hasCaptions": true,
+      "license": "CC BY-NC-SA 3.0 US", "attributionText": "Khan Academy, High School Geometry (CC BY-NC-SA 3.0 US)",
+      "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
+    { "ekgId": "ekg:resource:01JBXGEGEBRA00000000000000", "title": "GeoGebra Geometry",
+      "url": "https://www.geogebra.org/geometry", "kind": "tool", "cost": "free", "provider": "GeoGebra",
+      "modality": "do", "language": "en", "license": "GeoGebra Non-Commercial License Agreement",
+      "attributionText": "GeoGebra Geometry, geogebra.org", "embedPolicy": "link-only", "coverage": [],
+      "lastVerifiedAt": "2026-09-01T00:00:00Z",
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
+    { "ekgId": "ekg:resource:01JBXREGENTSPAST0000000000", "title": "Past Geometry Regents examinations",
+      "url": "https://www.nysedregents.org/geometryre/", "kind": "practice", "cost": "free",
+      "provider": "New York State Education Department", "modality": "do", "language": "en",
+      "license": "New York State Education Department, public materials",
+      "attributionText": "Past Geometry Regents examinations, New York State Education Department",
+      "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
+    { "ekgId": "ekg:resource:01JBXNYSSTANDARDSPDF000000", "title": "NYS Next Generation Mathematics Learning Standards (P-12)",
+      "url": "https://www.nysed.gov/sites/default/files/programs/standards-instruction/nys-next-generation-mathematics-p-12-standards.pdf",
+      "kind": "reference", "cost": "free", "provider": "New York State Education Department",
+      "modality": "read", "language": "en", "license": "New York State Education Department, public materials",
+      "attributionText": "NYS Next Generation Mathematics Learning Standards, New York State Education Department",
+      "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } }
+  ],
+  "body": {
+    "ekg:outcome:01JBX0DEFNTERMS00000000000": "### Scope\n\nAngle, circle, perpendicular lines, parallel lines, and line segment, each defined in terms of point, line, distance along a line, and distance around a circular arc.\n\n### Common misconceptions\n\n- Treating \"perpendicular\" as \"looks like a corner\" rather than as lines meeting at a right angle.\n- Defining a circle by its shape instead of as the set of points at a fixed distance from a center.",
+    "ekg:outcome:01JBX1REPRESENT00000000000": "### Scope\n\nTransformations described as functions on points, using transparencies, free geometry software, or coordinates. …",
+    "ekg:outcome:01JBX2RGDMTNS0000000000000": "### Scope\n\nRotations, reflections, and translations, defined precisely and performed on given figures. …",
+    "ekg:outcome:01JBX3PRVCNGRNCE0000000000": "### Scope\n\nCongruence defined through rigid motions, applied to deciding congruence of figures and to triangle congruence in terms of corresponding parts. …",
+    "ekg:outcome:01JBX4TRNGCRTRA00000000000": "Reached for from [Use rigid motions to decide and prove congruence](/outcomes/prove-congruence-with-rigid-motions), whose notes name the triangle congruence criteria as the natural next outcome.",
+    "ekg:course:01JBX5CRSCNGRNCE0000000000": "## Plan\n\n### Step 1: Definitions\n\nOutcome: [Define the basic objects of plane geometry](/outcomes/define-geometric-terms). …",
+    "ekg:assessment:01JBX6TASKRGDMTN0000000000": "## Task\n\nYou will be given two pairs of figures by the assessor and will add three pairs of your own. …\n\n## Scoring guide\n\n| Level | Description |\n| --- | --- |\n| **Proficient** | Every decision is correct. … |",
+    "ekg:credential:01JBX7BADGECNGRNC000000000": "This micro-credential covers the congruence strand of high school geometry as expressed in the New York State Next Generation Mathematics Learning Standards (GEO-G.CO.1 through GEO-G.CO.7). …"
+  }
+}

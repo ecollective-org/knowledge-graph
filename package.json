@@ -1,0 +1,58 @@
+{
+  "name": "@ecollective/knowledge-graph",
+  "version": "0.1.0",
+  "description": "Zod schemas, ekgId helpers, artifact types and a validator for the eCollective Knowledge Graph (SPEC.md v0.1).",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SPEC.md",
+    "GOVERNANCE.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ecollective-org/knowledge-graph.git"
+  },
+  "homepage": "https://github.com/ecollective-org/knowledge-graph#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run clean && npm run build",
+    "verify": "npm run typecheck && npm run test && npm run build"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "dependencies": {
+    "ulid": "3.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7",
+    "zod": "4.5.4"
+  }
+}
