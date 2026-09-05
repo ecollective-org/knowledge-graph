@@ -123,9 +123,7 @@ scope (an owner action; needs a token for the scope).
 
 **Open Degree** — the publisher, and the one with the most to do:
 
-- Decide `ekgId` adoption (`EKG-OQ-1`). This is the single blocking decision: a graph without
-  immutable identifiers forces every consumer into a slug-plus-alias registry, which is strictly
-  worse, and guarantees a data migration later.
+- `ekgId` adoption (`EKG-OQ-1`) is decided: yes, 2026-09-05. The remaining items are the work.
 - Add `ekgId`, `slug`, `previousSlugs[]`, and `provenance` to the content schema and backfill them once.
 - Extend the inline `resource` object with §3.6's optional fields, and mint and persist a resource `ekgId` per distinct URL.
 - Generalize the `supersededBy` rule to every entity, and move the prerequisite cycle check to whole-graph scope.

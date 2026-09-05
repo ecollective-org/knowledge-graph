@@ -959,7 +959,7 @@ as training data, and no term of this specification may be read to grant any rig
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| **EKG-OQ-1** | Will Open Degree add and backfill `ekgId`? The alternative — a slug-plus-alias registry held by each consumer — is strictly worse and would have to be recorded as a deliberate downgrade. (DIY Degree's OQ-4.) | Everything. This is the one decision that, deferred, forces a data migration later. |
+| **EKG-OQ-1** | **Resolved 2026-09-05: yes.** Open Degree adds and backfills `ekgId` (with `slug`, `previousSlugs[]` and `provenance`) through this package and emits the artifact from its build, per §12.4. The slug-plus-alias registry alternative is rejected. (DIY Degree's OQ-4.) | Nothing now; the conformance work is tracked in `www.opendegree.org`. |
 | **EKG-OQ-2** | Who are Open Degree's maintainers, and what is their SLA on an inbound bot pull request? (DIY Degree's OQ-3.) | The contribution protocol's throughput, and any consumer staffing plan built on it. |
 | **EKG-OQ-3** | Where does the resource `ekgId` write-back land (EKG-SPEC-24) — a build-time commit from Open Degree's own CI, or a manual pass? A build that mints without persisting is not acceptable. | The artifact builder. |
 | **EKG-OQ-4** | Should `resource` become a first-class collection in Open Degree rather than an inline object? It has identity, provenance, and a lifecycle already; keeping it inline is the reason EKG-SPEC-24 is awkward. | Deferred to v0.2; the artifact shape (§8.3) already treats resources as first-class, so this is a source-layout question, not a contract question. |
