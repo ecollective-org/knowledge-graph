@@ -1,0 +1,117 @@
+# Governance
+
+How the eCollective Knowledge Graph is stewarded. This document governs the **specification and the
+package** in this repository. It does not govern curriculum content, which is stewarded by Open
+Degree under its own `/standard/governance` page.
+
+Status: **v0.1 draft**, filed 2026-09-05. The roles below are named by function; several are held by
+the same person today, and that is stated rather than disguised.
+
+## Roles
+
+### Owner and arbiter
+
+One person, currently the eCollective owner. The arbiter:
+
+- breaks ties when the three products disagree;
+- approves or rejects a breaking change when consensus is not reached;
+- appoints and removes product maintainers;
+- is the only role that can amend this document.
+
+There is no governance body yet. Until one exists, the owner is the arbiter, and this document says
+so plainly rather than implying a committee that does not meet. When a body is formed, its charter
+replaces this section and the arbiter role becomes an appeal, not a first instance.
+
+### Product maintainers
+
+One named maintainer per consuming product. Each maintainer:
+
+- speaks for their product in a breaking-change decision, and their sign-off is required (§Decisions);
+- keeps their product's pinned `@ecollective/knowledge-graph` version current, and says publicly when it is not;
+- keeps their product's row in `SPEC.md` §13 (consumer obligations) honest — including reporting a MUST their product does not yet meet;
+- registers and operates their product's contribution bot identity (`SPEC.md` §9.3).
+
+| Product | Role | Bot identity |
+| --- | --- | --- |
+| Open Degree | Publisher and moderator | — (it is the publisher) |
+| DIY Degree | Importer and contributor | `diy-degree-curation` |
+| InstructOS | Mapper | `instructos-mapping` |
+
+### Open Degree moderators
+
+Open Degree's own maintainers. They are the human gate on every change to canonical content, and
+the only role that may set `status` to `proposed`, `adopted`, or `deprecated` (`SPEC.md`
+EKG-SPEC-27). They review inbound contribution pull requests against the checklist in `SPEC.md`
+§9.4, and record a rejection reason from §9.6.
+
+Their identities and their review SLA are an open question (`SPEC.md` EKG-OQ-2). Until it is
+answered, no consumer should build a throughput plan on upstream review, which is why every consumer
+is permitted to serve non-`adopted` content, clearly labelled.
+
+### Specification editor
+
+Maintains this repository: merges accepted changes into `SPEC.md`, assigns `EKG-SPEC-nn` identifiers,
+keeps the changelog, and cuts releases. Held by the owner today.
+
+## Decisions
+
+Every change to the specification or the package is one of three kinds. The kind determines who must
+sign off, not how large the diff is. The definitions of breaking, additive, and patch are in
+`SPEC.md` §12.1 and are normative here.
+
+| Kind | Who signs off | Timeline |
+| --- | --- | --- |
+| **Breaking** (major) | All three product maintainers **and** the arbiter | 14-day comment window before merge; no exceptions for urgency, because a breaking change that cannot wait 14 days is a bug fix in disguise |
+| **Additive** (minor) | The specification editor, plus any one product maintainer | 7-day comment window; a maintainer's objection escalates it to a breaking-change vote |
+| **Patch** | The specification editor | Merge on review |
+
+**A breaking change with a missing sign-off does not ship.** If a product maintainer is unreachable
+for 30 days, the arbiter may vote in their place, and the record must say that is what happened.
+
+Every decision of consequence is written up as a numbered record in `docs/decisions/`, in the style
+of `0001-dedicated-framework-repo.md`: context, decision, rejected alternatives, consequences,
+follow-ups. A decision that is not written down did not happen.
+
+**Emergency exception.** A change that removes personal data, closes a licence violation, or fixes a
+security defect may be merged immediately by the editor with the arbiter's assent, and is
+retroactively documented within 72 hours. Nothing else qualifies.
+
+## Release cadence
+
+- **Specification**: released when there is something to release, not on a calendar. Each release is
+  a tagged commit with a changelog entry naming every requirement added, changed, or withdrawn.
+- **Package** (`@ecollective/knowledge-graph`, not yet published): semver, published to GitHub
+  Packages under the `@ecollective` scope. Consumers pin exact versions (`SPEC.md` EKG-SPEC-82).
+- **Deprecation windows**: a field marked deprecated is emitted for two minor releases or 90 days,
+  whichever is longer; a superseded artifact major version is published unchanged for 180 days
+  (`SPEC.md` §12.2).
+- **No release removes a requirement identifier.** A withdrawn requirement is marked withdrawn in
+  place, so a citation from another document never dangles.
+
+## How a new consumer joins
+
+Anyone may read the artifact under its licence without asking. Joining as a *governed consumer* —
+one whose maintainer signs off on breaking changes and whose bot may open contribution pull requests
+— is a deliberate step:
+
+1. Open an issue in this repository stating the product, its role (publisher, importer, contributor,
+   mapper), and which obligations in `SPEC.md` §13 it commits to.
+2. Publish a conformance statement: which MUSTs are met, which are not yet, and by when. An honest
+   "not yet" is acceptable; a false claim is not.
+3. Register a bot identity (`SPEC.md` §9.3) and have it approved by the Open Degree moderators.
+4. Name a product maintainer, who becomes a sign-off holder from the next release onward.
+5. Pin an exact package version and record it in the product's build output.
+
+The arbiter approves or declines. A consumer that stops meeting its obligations, or whose maintainer
+goes silent for 90 days, is moved to read-only: its bot's pull-request access is suspended and its
+sign-off is no longer required, until it re-joins.
+
+## Conduct
+
+Contributors are expected to be direct, kind, and specific. Disagreement about the model is the
+point of the process; personal attacks, harassment, and bad-faith participation are not, and result
+in removal by the arbiter.
+
+A formal code of conduct will be adopted alongside Open Degree's when its contributor base grows;
+until then, the paragraph above is the whole of it, and the arbiter is where a concern goes. Report
+by opening a private issue or contacting the arbiter directly.
