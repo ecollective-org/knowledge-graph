@@ -11,8 +11,10 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.1 draft. No package is published yet.** The specification is filed and citable; the
-> code is not written. Nothing here is frozen.
+> **Status: v0.1 draft specification; package code at 0.1.0, not yet published.** The
+> specification is filed and citable. `schema.ts` and `validate.ts` exist with tests and the
+> Appendix B artifact validates clean; `build-artifact.ts` does not exist yet (#3). Until the package is
+> on GitHub Packages (#2), a consumer pins a packed tarball (`npm pack`) by commit. Nothing here is frozen.
 
 ## What this repository is
 
@@ -82,29 +84,48 @@ See [`SPEC.md` §8](SPEC.md#8-the-published-artifact), with a complete worked ex
 | See what is undecided | [§15 Open questions](SPEC.md#15-open-questions) |
 | See the proposed Zod schema | [Appendix A](SPEC.md#appendix-a--schemats-sketch) |
 
+## Using the package
+
+```ts
+import {
+  artifact, entity, validateDomainFile, validateGraph, mintEkgId, normalizeResourceUrl,
+} from '@ecollective/knowledge-graph';
+
+// Open Degree's content.config.ts: the source schemas take frontmatter with wikilink references.
+const outcomes = defineCollection({ loader: markdown('outcomes'), schema: entity /* or outcome */ });
+
+// A consumer's importer: a domain file must validate with no errors before anything is written.
+const result = validateDomainFile(await fetchJson('/api/graph/v1/domains/geometry.json'));
+if (!result.ok) abortImport(result.errors); // every error names slug, ekgId and the rule (V-nn)
+```
+
+`zod@^4` is a peer dependency. Node 20.19 or later. `npm run verify` runs typecheck, tests and
+the build; `npm pack` produces the tarball a consumer pins until the package is published.
+
 ## Roadmap to the v0.1 package
 
-Three deliverables, in order. None of them exists yet.
+Three deliverables, in order. The first two exist; the third does not.
 
-1. **`schema.ts`** — the Zod schemas of `SPEC.md` §3, the `ekgId` mint/parse helpers of §4, the
-   artifact types of §8, and the provenance and alignment value objects. Sketched in Appendix A.
-2. **`validate.ts`** — every rule in §11, including the whole-graph checks no per-entity schema can
-   express: reference resolution, prerequisite cycles, `ekgId` uniqueness, slug history, and
-   supersession chains. Ported from Open Degree's `src/lib/coherence.ts`, which is the reference
+1. **`schema.ts`** — done. The Zod schemas of `SPEC.md` §3, the `ekgId` mint/parse helpers of §4,
+   the artifact types of §8, and the provenance and alignment value objects, in `src/`.
+2. **`validate.ts`** — done. Every rule in §11, including the whole-graph checks no per-entity
+   schema can express: reference resolution, prerequisite cycles, `ekgId` uniqueness, slug history,
+   and supersession chains. Ported from Open Degree's `src/lib/coherence.ts`, which is the reference
    implementation.
-3. **`build-artifact.ts`** — turn a validated content set into the §8 file layout: manifest,
-   per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots, with deterministic
-   key ordering so a byte diff is a semantic diff.
+3. **`build-artifact.ts`** — not yet (#3). Turn a validated content set into the §8 file layout:
+   manifest, per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots, with
+   deterministic key ordering so a byte diff is a semantic diff.
 
-Then: publish `@ecollective/knowledge-graph@0.1.0` to GitHub Packages under the `@ecollective` scope.
+Then: publish `@ecollective/knowledge-graph@0.1.0` to GitHub Packages under the `@ecollective`
+scope (an owner action; needs a token for the scope): #2, which also adds the tag-triggered publish
+workflow. The v0.2 specification follow-ups (changelog layout, resource write-back, build retention,
+the remaining open questions) are #4.
 
 ## What each product needs before its next phase
 
 **Open Degree** — the publisher, and the one with the most to do:
 
-- Decide `ekgId` adoption (`EKG-OQ-1`). This is the single blocking decision: a graph without
-  immutable identifiers forces every consumer into a slug-plus-alias registry, which is strictly
-  worse, and guarantees a data migration later.
+- `ekgId` adoption (`EKG-OQ-1`) is decided: yes, 2026-09-05. The remaining items are the work.
 - Add `ekgId`, `slug`, `previousSlugs[]`, and `provenance` to the content schema and backfill them once.
 - Extend the inline `resource` object with §3.6's optional fields, and mint and persist a resource `ekgId` per distinct URL.
 - Generalize the `supersededBy` rule to every entity, and move the prerequisite cycle check to whole-graph scope.
@@ -115,7 +136,7 @@ The full list is [`SPEC.md` §12.4](SPEC.md#124-what-open-degree-must-change-to-
 
 **DIY Degree** — before Phase 1:
 
-- Pin the package once it exists; until then, treat `SPEC.md` as the contract and key every table on `ekgId`.
+- Pin the package exactly (EKG-SPEC-82). Until it is published, pin the packed tarball by commit; key every table on `ekgId`.
 - Build `graph-import` against §8.7: idempotent, diff-based, atomic on failure, canonical fields overwritten and overlay fields never touched.
 - Keep its overlay states (`submitted`, `provisional`, `canonical`, `rejected`) out of the shared model, per the mapping in §5.3.
 - Build `proposal-publisher` to the pull-request format in §9.2, as `diy-degree-curation`.

@@ -19,7 +19,9 @@ importer and contributor), and InstructOS (mapper).
 assessment, or credential. All of that is in `ecollective-org/www.opendegree.org`. See
 `docs/decisions/0001-dedicated-framework-repo.md` for why.
 
-Status: **v0.1 draft. No package published yet.** There is no build, no test suite, and no code.
+Status: **v0.1 draft specification; package code at 0.1.0, not yet published.** `schema.ts` and
+`validate.ts` exist with tests; `build-artifact.ts` does not yet. Publishing to GitHub Packages is
+an owner action (`npm publish` with a token for the `@ecollective` scope).
 
 ## Layout
 
@@ -27,16 +29,42 @@ Status: **v0.1 draft. No package published yet.** There is no build, no test sui
 ├── SPEC.md                                    # the specification (read first)
 ├── GOVERNANCE.md                              # roles, decision process, release cadence
 ├── README.md                                  # what this is, roadmap, per-product to-do
+├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── LICENSE                                    # MIT
 ├── CLAUDE.md
+├── package.json                               # @ecollective/knowledge-graph, ESM, zod 4 peer
+├── tsconfig.json  tsconfig.build.json  vitest.config.ts
+├── src/
+│   ├── index.ts                               # the public surface; everything is re-exported here
+│   ├── ekg-id.ts                              # EKG_TYPES, ekgId(), anyEkgId, mintEkgId, parseEkgId  (§4)
+│   ├── schema.ts                              # source and artifact entity schemas, value objects (§3)
+│   ├── artifact.ts                            # manifest, domainFile, edge, checksums, changelog (§8)
+│   ├── checksums.ts                           # sha256Hex, verifyChecksums (§8.5, V-24)
+│   ├── frameworks.ts                          # the framework registry (§6.2)
+│   ├── url.ts                                 # normalizeResourceUrl (EKG-SPEC-25)
+│   └── validate.ts                            # validateGraph, validateDomainFile (§11)
+├── test/                                      # vitest; fixtures/geometry.json is Appendix B verbatim
 └── docs/decisions/
     └── 0001-dedicated-framework-repo.md
 ```
 
-When the package is written it lands as `src/` plus `package.json`, publishing
-`@ecollective/knowledge-graph` to GitHub Packages: `schema.ts`, `validate.ts`, `build-artifact.ts`.
-Appendix A of `SPEC.md` sketches the first of these.
+Two schema families live in `schema.ts`: the **source** schemas (`domain`, `outcome`, …, `entity`)
+take frontmatter with slug or wikilink references and optional provenance, which is what Open
+Degree's `content.config.ts` imports; the **artifact** schemas (`artifact.*`) take `ekgId`
+references, `resourceIds`, and required provenance, which is what a consumer validates on import.
+
+## Verify
+
+```
+npm install
+npm run typecheck      # tsc over src and test
+npm test               # vitest; the Appendix B artifact must validate with no errors or warnings
+npm run build          # emits dist/ (ESM + .d.ts); `npm pack` runs it via prepack
+```
+
+Node 20.19 or later. `zod` is a peer dependency at `^4`, matching the Astro-bundled zod that Open
+Degree already uses; the package never bundles its own copy.
 
 ## Conventions
 
@@ -70,7 +98,12 @@ Appendix A of `SPEC.md` sketches the first of these.
 ## What not to do
 
 - Do not add curriculum content here.
-- Do not write package code beyond Appendix A's sketch until the roadmap in `README.md` says so.
+- Do not add an export to `src/index.ts` that the specification does not describe; if a consumer
+  needs something new, it is a specification change first (`GOVERNANCE.md`).
+- Every validation error names the entity by slug and ekgId and states the rule number
+  (EKG-SPEC-76). A test that adds a rule asserts on the rule number, not on the prose.
+- Test fixtures use only the Crockford alphabet in ULIDs (no I, L, O, U); an invalid id in a
+  fixture fails V-09 before the rule under test ever runs.
 - Do not change a field's meaning, name, or requiredness without treating it as a breaking change.
 - Do not claim conformance on behalf of a product. §13 is a checklist a product's maintainer fills in
   honestly, including the boxes that are not ticked.
