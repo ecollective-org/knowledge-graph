@@ -13,8 +13,8 @@ This repository holds the **framework**: the specification, the governance, and 
 
 > **Status: v0.1 draft specification; package code at 0.1.0, not yet published.** The
 > specification is filed and citable. `schema.ts` and `validate.ts` exist with tests and the
-> Appendix B artifact validates clean; `build-artifact.ts` does not exist yet. Until the package is
-> on GitHub Packages, a consumer pins a packed tarball (`npm pack`) by commit. Nothing here is frozen.
+> Appendix B artifact validates clean; `build-artifact.ts` does not exist yet (#3). Until the package is
+> on GitHub Packages (#2), a consumer pins a packed tarball (`npm pack`) by commit. Nothing here is frozen.
 
 ## What this repository is
 
@@ -112,12 +112,14 @@ Three deliverables, in order. The first two exist; the third does not.
    schema can express: reference resolution, prerequisite cycles, `ekgId` uniqueness, slug history,
    and supersession chains. Ported from Open Degree's `src/lib/coherence.ts`, which is the reference
    implementation.
-3. **`build-artifact.ts`** — not yet. Turn a validated content set into the §8 file layout:
+3. **`build-artifact.ts`** — not yet (#3). Turn a validated content set into the §8 file layout:
    manifest, per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots, with
    deterministic key ordering so a byte diff is a semantic diff.
 
 Then: publish `@ecollective/knowledge-graph@0.1.0` to GitHub Packages under the `@ecollective`
-scope (an owner action; needs a token for the scope).
+scope (an owner action; needs a token for the scope): #2, which also adds the tag-triggered publish
+workflow. The v0.2 specification follow-ups (changelog layout, resource write-back, build retention,
+the remaining open questions) are #4.
 
 ## What each product needs before its next phase
 

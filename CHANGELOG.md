@@ -26,7 +26,7 @@ First package release, implementing `SPEC.md` v0.1 draft. Not yet published to G
 
 ### Not yet
 
-- `build-artifact.ts` (SPEC §8 file layout from a validated content set) — the third roadmap
+- `build-artifact.ts` (SPEC §8 file layout from a validated content set; #3) — the third roadmap
   deliverable, needed by Open Degree's build, not by consumers.
 - A `changelog.json` shape is proposed here (`changelogEntry`); SPEC §8.6 fixes the fields but
   not the JSON layout, so treat the shape as the package's proposal until the specification
