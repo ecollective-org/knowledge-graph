@@ -11,10 +11,11 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.1 draft specification; package code at 0.1.0, not yet published.** The
-> specification is filed and citable. `schema.ts` and `validate.ts` exist with tests and the
-> Appendix B artifact validates clean; `build-artifact.ts` does not exist yet (#3). Until the package is
-> on GitHub Packages (#2), a consumer pins a packed tarball (`npm pack`) by commit. Nothing here is frozen.
+> **Status: v0.2 draft specification, landing change by change; package code at 0.2.0,
+> unreleased.** The specification is filed and citable. `schema.ts` and `validate.ts` exist with
+> tests and the Appendix B artifact validates clean; `build-artifact.ts` does not exist yet (#3).
+> Publishing is blocked on the package namespace (#2); until then a consumer pins a packed tarball
+> (`npm pack`) by content, which is conformant. Nothing here is frozen.
 
 ## What this repository is
 
@@ -116,10 +117,11 @@ Three deliverables, in order. The first two exist; the third does not.
    manifest, per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots, with
    deterministic key ordering so a byte diff is a semantic diff.
 
-Then: publish `@ecollective/knowledge-graph@0.1.0` to GitHub Packages under the `@ecollective`
-scope (an owner action; needs a token for the scope): #2, which also adds the tag-triggered publish
-workflow. The v0.2 specification follow-ups (changelog layout, resource write-back, build retention,
-the remaining open questions) are #4.
+Then: publish `@ecollective/knowledge-graph` to a registry (an owner action: the `@ecollective`
+scope is not this organisation's namespace on GitHub Packages, so #2 needs the owner's decision on
+the package name or the registry first; the tag-triggered publish workflow is in place). The v0.2
+changes land per issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups (changelog layout,
+resource write-back, build retention, the remaining open questions) are #4.
 
 ## What each product needs before its next phase
 

@@ -8,8 +8,8 @@ import { artifact, artifactResource, slug, status } from './schema.js';
  * The artifact is the contract; reading a content repository directly is not conformant.
  */
 
-/** The version of the specification these schemas implement. */
-export const SCHEMA_VERSION = '0.1.0';
+/** The version of the specification these schemas implement (EKG-SPEC-44). */
+export const SCHEMA_VERSION = '0.2.0';
 /** The artifact format's own version (EKG-SPEC-44). */
 export const ARTIFACT_VERSION = '1.0.0';
 

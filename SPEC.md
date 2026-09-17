@@ -1,10 +1,13 @@
-# eCollective Knowledge Graph Specification, v0.1 draft
+# eCollective Knowledge Graph Specification, v0.2 draft
 
-> Status: **v0.1 draft**. No package is published yet. This document is the contract three
+> Status: **v0.2 draft**, landing change by change from the adopted v0.2 proposal
+> ([`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md));
+> package 0.2.0, unreleased. No package is published yet. This document is the contract three
 > products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
-> stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered.
+> stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered, and a
+> requirement amended in 0.2.0 says so in place.
 >
-> Filed 2026-09-05. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
+> Filed 2026-09-05; v0.2 from 2026-09-17. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
 > [`docs/decisions/0001-dedicated-framework-repo.md`](docs/decisions/0001-dedicated-framework-repo.md).
 
 ## 1. Purpose and scope
@@ -214,6 +217,7 @@ resource to a learner.
 | `embedPolicy` **+** | `embed-allowed` \| `link-only` \| `official-player-only` \| `unknown` ? (`unknown`) | §7.2 |
 | `coverage` **+** | `string[]` ? (`[]`) | the outcome `evidence` statements this resource teaches |
 | `lastVerifiedAt` **+** | ISO 8601 `string` ? | link-check timestamp |
+| `audience` **+** | Audience ? | §7.4; absent means `unrated` (EKG-SPEC-110) |
 | `provenance` **+** | Provenance ? | required in the artifact; §7.3 |
 
 **EKG-SPEC-11** `embedPolicy` describes what a consumer is permitted to do, not what is technically
@@ -494,6 +498,73 @@ where AI generated it, `modelId` and `promptVersion`.
 and MUST expose it — at minimum `source`, `reviewedBy` where present, and the upstream `buildId` the
 content was imported from — in its own API and in its user interface.
 
+### 7.4 Audience ratings
+
+A parent decides what a child may see, and three products and every reader of the commons must
+read the same rating. The `audience` block on a resource is that rating: a band, the descriptors
+that explain it, and the basis it rests on. The scale is plain words rather than a rating board's
+letters, which are trademarks, and a single letter could not carry "strong language is fine,
+commercial pressure is not". Ratings are produced in the Open Degree commons, by an automated pass
+and by human review, and travel in the artifact so no consumer rates on its own.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `rating` | `all` \| `teen` \| `older_teen` \| `adult` \| `unrated` ? (`unrated`) | `teen` is 13 and over, `older_teen` 16 and over, `adult` 18 and over |
+| `descriptors` | Descriptor[] ? (`[]`) | why the rating is what it is; the fixed list below |
+| `basis.automated` | `{ modelId, promptVersion, at, signals[] }` ? | the automated pass: model, prompt, when, and what it read (`captions`, `title`, `provider_flag`, `text`) |
+| `basis.human` | `{ count, lastAt }` ? | human reviews: how many, and when the last was |
+| `confidence` | `number` 0–1 ? | the rater's confidence |
+| `disputes` | non-negative `integer` ? (`0`) | reports open against the rating |
+| `version` | positive `integer` ? (`1`) | bumped on every re-rating |
+
+The descriptors, exactly: `strong_language`, `violence`, `sexual_content`, `substance_use`,
+`mature_themes`, `frightening_content`, `discriminatory_content`, `self_harm_references`,
+`gambling`, `commercial_pressure`, `unmoderated_comments`, `external_links_or_chat`,
+`account_required`, `data_collection`, `perspective_content` (a religious or political viewpoint
+presented as such).
+
+**EKG-SPEC-110** `audience` is optional in source and in the artifact. A resource with no block is
+`unrated`; a consumer MUST treat an absent block and `rating: unrated` identically.
+
+**EKG-SPEC-111** A consumer that serves resources to a person under 18 MUST enforce a ceiling by
+age band (`teen` at 13 to 15, `older_teen` at 16 and 17) as a hard filter applied before ranking,
+never as a ranking weight, and MUST NOT serve an `unrated` resource as a minor's primary
+recommendation. An `unrated` resource MAY be offered to a minor as an alternative, labelled as
+unrated.
+
+**EKG-SPEC-112** A report from a consumer MAY lower that consumer's own effective rating for the
+resource immediately. Only a human review in the commons raises an effective rating. A consumer
+MUST NOT publish, contribute, or serve a rating looser than the one the artifact carries; it MAY
+hold a stricter one. `disputes` counts the reports open against the rating.
+
+**EKG-SPEC-113** `basis` is provenance in the sense of EKG-SPEC-13: a re-rating appends a new
+basis and bumps `version`; it never edits history. The `rating` and `descriptors` vocabularies are
+fixed by this specification and change only by a specification change; no product or service MAY
+add a value. Rating names are plain words and MUST NOT be the marks of any film, game, or
+television rating board.
+
+Example: the Khan Academy resource of Appendix B with a rating. The resource is real; the rating
+values are illustrative.
+
+```json
+{
+  "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000",
+  "title": "Khan Academy, High School Geometry",
+  "url": "https://www.khanacademy.org/math/geometry",
+  "kind": "video", "cost": "free", "provider": "Khan Academy",
+  "audience": {
+    "rating": "all",
+    "descriptors": [],
+    "basis": {
+      "automated": { "modelId": "claude-sonnet-5", "promptVersion": "audience-v1",
+        "at": "2026-09-16T02:00:00Z", "signals": ["title", "captions", "provider_flag"] },
+      "human": { "count": 2, "lastAt": "2026-09-16T15:20:00Z" }
+    },
+    "confidence": 0.9, "disputes": 0, "version": 2
+  }
+}
+```
+
 ## 8. The published artifact
 
 The artifact is the contract. It is how the graph leaves Open Degree, and it is the only supported
@@ -519,7 +590,7 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 
 ```json
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "artifactVersion": "1.0.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
@@ -558,7 +629,7 @@ complete file is Appendix B):
 
 ```jsonc
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "buildId": "8f3c…",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": { "ekgId": "ekg:domain:01J…", "slug": "geometry", "type": "domain", "title": "Geometry",
@@ -911,6 +982,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-97** Contributes only through the four channels of §9.1, by bot pull request as `diy-degree-curation`, under CC BY-SA 4.0; publishes aggregates only above k = 50, under CC0 (FR-EKG-07/11).
 - [ ] **EKG-SPEC-98** Never contributes learner work or personal data through any channel (FR-EKG-12).
 - [ ] **EKG-SPEC-99** Renders attribution for Open Degree-derived definitions and for every resource (FR-EKG-13).
+- [ ] **EKG-SPEC-114** Enforces the audience ceiling of EKG-SPEC-111 for every learner under 18 from the artifact's `audience` block, holds any stricter rating of its own as an overlay, and never serves an `unrated` resource as a minor's primary (decision record 0008 there).
 
 ### 13.3 InstructOS — mapper
 
@@ -1024,6 +1096,24 @@ export const alignment = z.object({
   relation: z.enum(['exact', 'broader', 'narrower', 'related']).default('exact'),
 });
 
+export const AUDIENCE_RATINGS = ['all', 'teen', 'older_teen', 'adult', 'unrated'] as const;
+export const AUDIENCE_DESCRIPTORS = ['strong_language', 'violence', 'sexual_content', 'substance_use',
+  'mature_themes', 'frightening_content', 'discriminatory_content', 'self_harm_references', 'gambling',
+  'commercial_pressure', 'unmoderated_comments', 'external_links_or_chat', 'account_required',
+  'data_collection', 'perspective_content'] as const;
+export const audience = z.object({                                             // §7.4 (0.2.0)
+  rating: z.enum(AUDIENCE_RATINGS).default('unrated'),
+  descriptors: z.array(z.enum(AUDIENCE_DESCRIPTORS)).default([]),
+  basis: z.object({
+    automated: z.object({ modelId: z.string(), promptVersion: z.string(), at: z.iso.datetime(),
+      signals: z.array(z.string()).default([]) }).optional(),
+    human: z.object({ count: z.number().int().nonnegative(), lastAt: z.iso.datetime() }).optional(),
+  }).default({}),
+  confidence: z.number().min(0).max(1).optional(),
+  disputes: z.number().int().nonnegative().default(0),
+  version: z.number().int().positive().default(1),
+});
+
 export const resource = z.object({
   ekgId: ekgId('resource').optional(),           // required in the artifact, minted on first build
   title: z.string(),
@@ -1042,6 +1132,7 @@ export const resource = z.object({
   embedPolicy: z.enum(['embed-allowed', 'link-only', 'official-player-only', 'unknown']).default('unknown'),
   coverage: z.array(z.string()).default([]),
   lastVerifiedAt: z.string().datetime().optional(),
+  audience: audience.optional(),                 // §7.4 (0.2.0)
   provenance: provenance.optional(),
 });
 
@@ -1135,7 +1226,7 @@ the complete Markdown.
 
 ```json
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { artifact, entity, outcome, provenance, resource, wikilink } from '../src/index.js';
+import { AUDIENCE_DESCRIPTORS, artifact, audience, entity, outcome, provenance, resource, wikilink } from '../src/index.js';
 import geometry from './fixtures/geometry.json' with { type: 'json' };
 
 const ISSUE_MESSAGES = (r: { success: boolean; error?: { issues: { message: string }[] } }) =>
@@ -101,6 +101,43 @@ describe('provenance (SPEC §3.8)', () => {
     const r = provenance.safeParse({ source: 'curator', generatedAt: now, reviewedBy: 'ravi@example.org', reviewedAt: now });
     expect(r.success).toBe(false);
     expect(ISSUE_MESSAGES(r).some((m) => m.includes('V-20'))).toBe(true);
+  });
+});
+
+describe('audience (SPEC §7.4)', () => {
+  const khan = geometry.resources.find((r) => r.ekgId === 'ekg:resource:01JBXKHANACADEMY0000000000')!;
+  const rated = {
+    rating: 'all',
+    descriptors: ['account_required'],
+    basis: {
+      automated: { modelId: 'claude-sonnet-5', promptVersion: 'audience-v1', at: '2026-09-16T02:00:00Z', signals: ['title', 'captions'] },
+      human: { count: 2, lastAt: '2026-09-16T15:20:00Z' },
+    },
+    confidence: 0.9,
+    disputes: 0,
+    version: 2,
+  };
+
+  it('is optional on a resource and defaults to unrated with an empty basis (EKG-SPEC-110)', () => {
+    const parsed = resource.parse({ title: 'x', url: 'https://example.org/a', kind: 'video' });
+    expect(parsed.audience).toBeUndefined();
+    expect(audience.parse({})).toEqual({ rating: 'unrated', descriptors: [], basis: {}, disputes: 0, version: 1 });
+  });
+
+  it('parses a full block on a source resource and on an artifact resource', () => {
+    expect(resource.safeParse({ title: khan.title, url: khan.url, kind: khan.kind, audience: rated }).success).toBe(true);
+    const r = artifact.resource.safeParse({ ...khan, audience: rated });
+    expect(r.success, ISSUE_MESSAGES(r).join('; ')).toBe(true);
+    if (r.success) expect(r.data.audience?.basis.human?.count).toBe(2);
+  });
+
+  it('fixes the scale and the descriptor list; anything else is V-01 (EKG-SPEC-113)', () => {
+    expect(AUDIENCE_DESCRIPTORS).toHaveLength(15);
+    expect(audience.safeParse({ rating: 'PG-13' }).success).toBe(false);
+    expect(audience.safeParse({ descriptors: ['scary'] }).success).toBe(false);
+    expect(audience.safeParse({ basis: { automated: { modelId: 'm', promptVersion: 'p', at: 'yesterday' } } }).success).toBe(false);
+    expect(audience.safeParse({ confidence: 1.5 }).success).toBe(false);
+    expect(audience.safeParse({ version: 0 }).success).toBe(false);
   });
 });
 

@@ -80,6 +80,26 @@ export const PROVENANCE_SOURCES = [
   'import',
 ] as const;
 
+/** The audience rating scale and descriptors (SPEC §7.4). Plain words, never a rating board's marks; fixed by the specification (EKG-SPEC-113). */
+export const AUDIENCE_RATINGS = ['all', 'teen', 'older_teen', 'adult', 'unrated'] as const;
+export const AUDIENCE_DESCRIPTORS = [
+  'strong_language',
+  'violence',
+  'sexual_content',
+  'substance_use',
+  'mature_themes',
+  'frightening_content',
+  'discriminatory_content',
+  'self_harm_references',
+  'gambling',
+  'commercial_pressure',
+  'unmoderated_comments',
+  'external_links_or_chat',
+  'account_required',
+  'data_collection',
+  'perspective_content',
+] as const;
+
 export type Level = (typeof LEVELS)[number];
 export type AssessmentKind = (typeof ASSESSMENT_KINDS)[number];
 export type ResourceKind = (typeof RESOURCE_KINDS)[number];
@@ -88,6 +108,8 @@ export type Modality = (typeof MODALITIES)[number];
 export type EmbedPolicy = (typeof EMBED_POLICIES)[number];
 export type Relation = (typeof RELATIONS)[number];
 export type ProvenanceSource = (typeof PROVENANCE_SOURCES)[number];
+export type AudienceRating = (typeof AUDIENCE_RATINGS)[number];
+export type AudienceDescriptor = (typeof AUDIENCE_DESCRIPTORS)[number];
 
 const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 
@@ -140,6 +162,33 @@ export const alignment = z.object({
 });
 export type Alignment = z.infer<typeof alignment>;
 
+/**
+ * The audience rating on a resource (SPEC §7.4, EKG-SPEC-110 to EKG-SPEC-113): a band, the
+ * descriptors that explain it, and the basis it rests on. Optional on a resource, with no default,
+ * so an absent block means `unrated` and a 0.1 artifact is unchanged by 0.2.0.
+ */
+export const audience = z.object({
+  rating: z.enum(AUDIENCE_RATINGS).default('unrated'),
+  descriptors: z.array(z.enum(AUDIENCE_DESCRIPTORS)).default([]),
+  basis: z
+    .object({
+      automated: z
+        .object({
+          modelId: z.string().min(1),
+          promptVersion: z.string().min(1),
+          at: z.iso.datetime(),
+          signals: z.array(z.string()).default([]),
+        })
+        .optional(),
+      human: z.object({ count: z.number().int().nonnegative(), lastAt: z.iso.datetime() }).optional(),
+    })
+    .default({}),
+  confidence: z.number().min(0).max(1).optional(),
+  disputes: z.number().int().nonnegative().default(0),
+  version: z.number().int().positive().default(1),
+});
+export type Audience = z.infer<typeof audience>;
+
 const resourceFields = {
   title: z.string().min(1),
   url: z.string().url(),
@@ -157,6 +206,8 @@ const resourceFields = {
   embedPolicy: z.enum(EMBED_POLICIES).default('unknown'),
   coverage: z.array(z.string()).default([]),
   lastVerifiedAt: z.string().datetime().optional(),
+  /** Absent means `unrated` (EKG-SPEC-110). */
+  audience: audience.optional(),
 };
 
 /**
