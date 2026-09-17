@@ -20,9 +20,9 @@ assessment, or credential. All of that is in `ecollective-org/www.opendegree.org
 `docs/decisions/0001-dedicated-framework-repo.md` for why.
 
 Status: **v0.2 draft specification, landing change by change (`docs/decisions/0002-…`); package
-code at 0.2.0, unreleased.** `schema.ts` and `validate.ts` exist with tests; `build-artifact.ts`
-does not yet. Publishing is an owner action and is blocked on the package namespace (#2): the
-`@ecollective` scope is not this organisation's on GitHub Packages.
+code at 0.2.0, unreleased.** `schema.ts`, `validate.ts` and `build-artifact.ts` exist with tests;
+the builder reproduces Appendix B byte for byte. Publishing is an owner action and is blocked on
+the package namespace (#2): the `@ecollective` scope is not this organisation's on GitHub Packages.
 
 ## Layout
 
@@ -46,6 +46,7 @@ does not yet. Publishing is an owner action and is blocked on the package namesp
 │   ├── reference.ts                           # the commons' reference entities (§3.9)
 │   ├── import-bundle.ts                       # importBundle, validateImportBundle, the report (§9.7)
 │   ├── url.ts                                 # normalizeResourceUrl (EKG-SPEC-25)
+│   ├── build-artifact.ts                      # buildArtifact, stableStringify, diffCounts, deriveFeed (§8)
 │   └── validate.ts                            # validateGraph, validateDomainFile (§11)
 ├── test/                                      # vitest; fixtures/geometry.json is Appendix B verbatim
 └── docs/decisions/

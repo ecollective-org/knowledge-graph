@@ -131,8 +131,8 @@ export const feedEntry = z.object({
   ekgId: graphEkgId,
   type: z.enum(GRAPH_TYPES),
   change: z.enum(FEED_CHANGES),
-  /** The entity's `version` after the change. */
-  version: semver,
+  /** The entity's `version` after the change; absent for a resource, which carries none. */
+  version: semver.optional(),
   buildId: z.string().min(1),
   /** The build's `generatedAt`. */
   at: z.iso.datetime(),

@@ -14,6 +14,59 @@
   },
   "nodes": [
     {
+      "ekgId": "ekg:assessment:01JBX6TASKRGDMTN0000000000", "slug": "rigid-motion-congruence-task",
+      "previousSlugs": [], "type": "assessment", "title": "Rigid Motion Congruence Task",
+      "description": "A performance task in which the learner decides whether pairs of figures are congruent and proves it with rigid motions.",
+      "kind": "performance-task", "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "evidenceRequirements": [
+        "A portfolio of five figure pairs, at least two congruent and at least two not, designed by the learner.",
+        "For each congruent pair, an explicit sequence of rigid motions carrying one figure onto the other, drawn and described.",
+        "For each non-congruent pair, an explanation of why no rigid motion can exist.",
+        "One written proof that two given triangles are congruent, concluding that corresponding parts are congruent."
+      ],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:course:01JBX5CRSCNGRNCE0000000000", "slug": "congruence-through-rigid-motions",
+      "previousSlugs": [], "type": "course", "title": "Congruence Through Rigid Motions",
+      "description": "Go from precise geometric definitions to proving triangles congruent with rigid motions, using only free resources.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
+                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
+      "estimatedHours": 12, "formats": ["video", "interactive", "practice", "project"],
+      "kind": "curated_path", "segments": [], "alignments": [], "sources": [],
+      "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000", "ekg:resource:01JBXGEGEBRA00000000000000",
+                      "ekg:resource:01JBXNYSSTANDARDSPDF000000", "ekg:resource:01JBXREGENTSPAST0000000000"],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry", "congruence"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
+      "ekgId": "ekg:credential:01JBX7BADGECNGRNC000000000", "slug": "congruence-and-rigid-motions",
+      "previousSlugs": [], "type": "credential", "title": "Congruence and Rigid Motions",
+      "description": "The holder can define the objects of plane geometry, represent and perform rigid motions, and prove figures congruent using rigid motions.",
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
+      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
+                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
+      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
+      "format": "Open Badges 3.0 (W3C Verifiable Credential)",
+      "issuerRequirements": [
+        "Assess with the adopted version of the Rigid Motion Congruence Task, scored Proficient by a reviewer who did not teach the learner.",
+        "Retain the learner's evidence for verification, with the learner's consent, and give the learner a copy.",
+        "Issue as an Open Badges 3.0 credential referencing this credential's id and version."
+      ],
+      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
+      "contributors": [], "tags": ["geometry"],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
+    },
+    {
       "ekgId": "ekg:outcome:01JBX0DEFNTERMS00000000000", "slug": "define-geometric-terms",
       "previousSlugs": [], "type": "outcome",
       "title": "Define the basic objects of plane geometry",
@@ -115,59 +168,6 @@
       "contributors": [], "tags": ["proof", "congruence"],
       "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
         "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
-    },
-    {
-      "ekgId": "ekg:course:01JBX5CRSCNGRNCE0000000000", "slug": "congruence-through-rigid-motions",
-      "previousSlugs": [], "type": "course", "title": "Congruence Through Rigid Motions",
-      "description": "Go from precise geometric definitions to proving triangles congruent with rigid motions, using only free resources.",
-      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
-      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
-                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
-      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
-      "estimatedHours": 12, "formats": ["video", "interactive", "practice", "project"],
-      "kind": "curated_path", "segments": [], "alignments": [], "sources": [],
-      "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000", "ekg:resource:01JBXGEGEBRA00000000000000",
-                      "ekg:resource:01JBXNYSSTANDARDSPDF000000", "ekg:resource:01JBXREGENTSPAST0000000000"],
-      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
-      "contributors": [], "tags": ["geometry", "congruence"],
-      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
-        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
-    },
-    {
-      "ekgId": "ekg:assessment:01JBX6TASKRGDMTN0000000000", "slug": "rigid-motion-congruence-task",
-      "previousSlugs": [], "type": "assessment", "title": "Rigid Motion Congruence Task",
-      "description": "A performance task in which the learner decides whether pairs of figures are congruent and proves it with rigid motions.",
-      "kind": "performance-task", "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
-      "outcomes": ["ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
-      "evidenceRequirements": [
-        "A portfolio of five figure pairs, at least two congruent and at least two not, designed by the learner.",
-        "For each congruent pair, an explicit sequence of rigid motions carrying one figure onto the other, drawn and described.",
-        "For each non-congruent pair, an explanation of why no rigid motion can exist.",
-        "One written proof that two given triangles are congruent, concluding that corresponding parts are congruent."
-      ],
-      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
-      "contributors": [], "tags": ["geometry", "congruence"],
-      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
-        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
-    },
-    {
-      "ekgId": "ekg:credential:01JBX7BADGECNGRNC000000000", "slug": "congruence-and-rigid-motions",
-      "previousSlugs": [], "type": "credential", "title": "Congruence and Rigid Motions",
-      "description": "The holder can define the objects of plane geometry, represent and perform rigid motions, and prove figures congruent using rigid motions.",
-      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
-      "outcomes": ["ekg:outcome:01JBX0DEFNTERMS00000000000", "ekg:outcome:01JBX1REPRESENT00000000000",
-                   "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
-      "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
-      "format": "Open Badges 3.0 (W3C Verifiable Credential)",
-      "issuerRequirements": [
-        "Assess with the adopted version of the Rigid Motion Congruence Task, scored Proficient by a reviewer who did not teach the learner.",
-        "Retain the learner's evidence for verification, with the learner's consent, and give the learner a copy.",
-        "Issue as an Open Badges 3.0 credential referencing this credential's id and version."
-      ],
-      "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
-      "contributors": [], "tags": ["geometry"],
-      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
-        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" }
     }
   ],
   "edges": [
@@ -177,13 +177,6 @@
     { "type": "prerequisite", "from": "ekg:outcome:01JBX4TRNGCRTRA00000000000", "to": "ekg:outcome:01JBX3PRVCNGRNCE0000000000", "targetDomain": "geometry" }
   ],
   "resources": [
-    { "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000", "title": "Khan Academy, High School Geometry",
-      "url": "https://www.khanacademy.org/math/geometry", "kind": "video", "cost": "free",
-      "provider": "Khan Academy", "modality": "watch", "language": "en", "hasCaptions": true,
-      "license": "CC BY-NC-SA 3.0 US", "attributionText": "Khan Academy, High School Geometry (CC BY-NC-SA 3.0 US)",
-      "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
-      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
-        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
     { "ekgId": "ekg:resource:01JBXGEGEBRA00000000000000", "title": "GeoGebra Geometry",
       "url": "https://www.geogebra.org/geometry", "kind": "tool", "cost": "free", "provider": "GeoGebra",
       "modality": "do", "language": "en", "license": "GeoGebra Non-Commercial License Agreement",
@@ -191,11 +184,10 @@
       "lastVerifiedAt": "2026-09-01T00:00:00Z",
       "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
         "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
-    { "ekgId": "ekg:resource:01JBXREGENTSPAST0000000000", "title": "Past Geometry Regents examinations",
-      "url": "https://www.nysedregents.org/geometryre/", "kind": "practice", "cost": "free",
-      "provider": "New York State Education Department", "modality": "do", "language": "en",
-      "license": "New York State Education Department, public materials",
-      "attributionText": "Past Geometry Regents examinations, New York State Education Department",
+    { "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000", "title": "Khan Academy, High School Geometry",
+      "url": "https://www.khanacademy.org/math/geometry", "kind": "video", "cost": "free",
+      "provider": "Khan Academy", "modality": "watch", "language": "en", "hasCaptions": true,
+      "license": "CC BY-NC-SA 3.0 US", "attributionText": "Khan Academy, High School Geometry (CC BY-NC-SA 3.0 US)",
       "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
       "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
         "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
@@ -204,6 +196,14 @@
       "kind": "reference", "cost": "free", "provider": "New York State Education Department",
       "modality": "read", "language": "en", "license": "New York State Education Department, public materials",
       "attributionText": "NYS Next Generation Mathematics Learning Standards, New York State Education Department",
+      "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } },
+    { "ekgId": "ekg:resource:01JBXREGENTSPAST0000000000", "title": "Past Geometry Regents examinations",
+      "url": "https://www.nysedregents.org/geometryre/", "kind": "practice", "cost": "free",
+      "provider": "New York State Education Department", "modality": "do", "language": "en",
+      "license": "New York State Education Department, public materials",
+      "attributionText": "Past Geometry Regents examinations, New York State Education Department",
       "embedPolicy": "link-only", "coverage": [], "lastVerifiedAt": "2026-09-01T00:00:00Z",
       "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
         "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } }

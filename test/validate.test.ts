@@ -302,20 +302,34 @@ describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
 
   it('accepts the frontier overlays in a domain file with no warnings, and names a subKind contradiction (0.2.0)', () => {
     const file = clone(geometry);
-    Object.assign(file.nodes[0]!, { volatility: 'evolving', evidenceClass: 'mixed' });
-    Object.assign(file.resources[0]!, { subKind: 'talk', publishedAt: '2024-01-15', externalIds: { youtube: 'dQw4w9WgXcQ' }, transcript: { available: true, retrievableUnderTerms: true }, platformId: 'ekg:platform:01JBXP7ATF0RMKHAN000000000' });
+    Object.assign(file.nodes.find((n) => n.type === 'outcome')!, { volatility: 'evolving', evidenceClass: 'mixed' });
+    const khan = file.resources.find((r) => r.ekgId === 'ekg:resource:01JBXKHANACADEMY0000000000')!;
+    Object.assign(khan, { subKind: 'talk', publishedAt: '2024-01-15', externalIds: { youtube: 'dQw4w9WgXcQ' }, transcript: { available: true, retrievableUnderTerms: true }, platformId: 'ekg:platform:01JBXP7ATF0RMKHAN000000000' });
     const result = validateDomainFile(file);
     expect(result.errors).toEqual([]);
     expect(result.warnings).toEqual([]);
-    Object.assign(file.resources[0]!, { subKind: 'repo' });
+    Object.assign(khan, { subKind: 'repo' });
     const bad = validateDomainFile(file);
     expect(bad.errors[0]).toMatchObject({ rule: 'V-01', slug: '(domain file)' });
-    expect(bad.errors[0]?.path).toBe('resources[0].subKind');
+    expect(bad.errors[0]?.path).toBe(`resources[${file.resources.indexOf(khan)}].subKind`);
+  });
+
+  it('accepts a reference that leaves the file when it is a well-typed ekgId, and still rejects a malformed one (V-23 amended)', () => {
+    const file = clone(geometry);
+    const define = file.nodes.find((n) => n.slug === 'define-geometric-terms') as { prerequisites: string[] };
+    define.prerequisites = ['ekg:outcome:01JBXC7EANADATASET00000000'];
+    file.edges.push({ type: 'prerequisite', from: 'ekg:outcome:01JBX0DEFNTERMS00000000000', to: 'ekg:outcome:01JBXC7EANADATASET00000000', targetDomain: 'data-literacy' } as never);
+    expect(validateDomainFile(file).errors).toEqual([]);
+    define.prerequisites = ['ekg:domain:01JBXC7EANADATASET00000000'];
+    expect(rules(validateDomainFile(file).errors)).toContain('V-09');
+    // The whole-graph pass a consumer runs over its import still resolves everything (V-02).
+    define.prerequisites = ['ekg:outcome:01JBXC7EANADATASET00000000'];
+    expect(rules(validateGraph([file.domain, ...file.nodes], { mode: 'artifact' }).errors)).toContain('V-02');
   });
 
   it('V-23 rejects a resourceIds entry that is not in the file', () => {
     const file = clone(geometry);
-    (file.nodes[0] as { resourceIds: string[] }).resourceIds.push('ekg:resource:01JBXMSSNGRSRC000000000000');
+    (file.nodes.find((n) => n.slug === 'define-geometric-terms') as { resourceIds: string[] }).resourceIds.push('ekg:resource:01JBXMSSNGRSRC000000000000');
     const { errors } = validateDomainFile(file);
     expect(errors[0]).toMatchObject({ rule: 'V-23', slug: 'define-geometric-terms' });
   });
@@ -330,15 +344,15 @@ describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
 
   it('runs the whole-graph rules over the file: a cycle through the artifact is V-03', () => {
     const file = clone(geometry);
-    (file.nodes[0] as { prerequisites: string[] }).prerequisites = ['ekg:outcome:01JBX4TRNGCRTRA00000000000'];
+    (file.nodes.find((n) => n.slug === 'define-geometric-terms') as { prerequisites: string[] }).prerequisites = ['ekg:outcome:01JBX4TRNGCRTRA00000000000'];
     expect(rules(validateDomainFile(file).errors)).toContain('V-03');
   });
 
   it('V-17 in artifact mode checks coverage against every outcome referencing the resource', () => {
     const file = clone(geometry);
-    (file.resources[1] as { coverage: string[] }).coverage = ['States a definition of each rigid motion using the terms from the definitions outcome.'];
+    (file.resources.find((r) => r.ekgId === 'ekg:resource:01JBXGEGEBRA00000000000000') as { coverage: string[] }).coverage = ['States a definition of each rigid motion using the terms from the definitions outcome.'];
     expect(validateDomainFile(file).ok).toBe(true);
-    (file.resources[1] as { coverage: string[] }).coverage = ['Not an evidence statement.'];
+    (file.resources.find((r) => r.ekgId === 'ekg:resource:01JBXGEGEBRA00000000000000') as { coverage: string[] }).coverage = ['Not an evidence statement.'];
     const { errors } = validateDomainFile(file);
     expect(errors[0]).toMatchObject({ rule: 'V-17', ekgId: 'ekg:resource:01JBXGEGEBRA00000000000000' });
   });

@@ -60,13 +60,29 @@ is optional, and nothing here changes the meaning of an existing field.
   Bundle outcome and resource proposals carry the same fields. DIY Degree's obligation
   EKG-SPEC-156. EKG-OQ-10 records the enum growth deferred to the next major (Change J).
 
+- `build-artifact`: `buildArtifact(entries, { buildId, generatedAt, previous?, … })`, pure and
+  runtime-agnostic, ported from Open Degree's `src/lib/ekg.ts`: the manifest, per-domain files
+  with cross-domain assessments, credentials and courses (EKG-SPEC-45, EKG-SPEC-136), edges,
+  deduplicated resources and bodies, `all.json.gz`, `checksums.json` over every published path,
+  `changelog.json` and `feed.json` diffed against the previous artifact, and the build snapshot;
+  with `stableStringify`, `sortKeys`, `diffCounts` and `deriveFeed` (SPEC §8; #3). It refuses a
+  resource without an `ekgId` rather than mint one (EKG-SPEC-24).
+
 ### Changed
 
 - `SCHEMA_VERSION` is `0.2.0`; the Appendix B fixture and the specification's artifact examples
   say so.
+- Appendix B's `nodes` and `resources` are now in the order EKG-SPEC-52 requires (a patch: the
+  example was out of the order the rule mandates), so the builder's test compares it byte for
+  byte; the §8.3 shape comment says the same.
 - `commons.ekgId`, `domainFile.body` keys and `changelogEntry.merges` accept graph-type ids only
   (`graphEkgId`), exactly the 0.1 acceptance set, so a reference id never enters a graph file.
 - A validation error's `path` renders as `nodes[8].type`, not `nodes.[8].type`.
+- `validateDomainFile` no longer fails V-02 on a reference that legitimately leaves the file (a
+  cross-domain node's outcomes, a prerequisite in another domain; EKG-SPEC-45/46, V-23 amended):
+  it accepts a well-formed `ekgId` of the expected type, and `validateGraph` over the union of the
+  imported files still runs whole-graph V-02 (`allowExternalReferences` is the switch). Before
+  0.2.0 a publisher's first cross-domain prerequisite would have failed its build.
 - A parsed course carries `kind`, `segments`, `alignments` and `sources` (defaulted), so Appendix
   B's course and a 0.2 publisher's artifact courses gain four keys; a 0.1 consumer ignores them
   (EKG-SPEC-78). `Framework.kind` is required in the registry type.

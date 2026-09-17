@@ -49,6 +49,12 @@ export interface ValidateOptions {
   mode?: RefMode;
   /** The deduplicated resources of a domain file, needed for V-17 and V-18 in artifact mode. */
   resources?: ArtifactResource[];
+  /**
+   * Accept a well-formed `ekgId` reference of the expected type that resolves to nothing passed in,
+   * because it lives in another domain file (EKG-SPEC-45/46, V-23). `validateDomainFile` sets it;
+   * a consumer validating its whole import leaves it off so V-02 runs over the union.
+   */
+  allowExternalReferences?: boolean;
 }
 
 export interface ValidationResult {
@@ -268,11 +274,13 @@ export function validateGraph(inputs: readonly unknown[], options: ValidateOptio
     }
   }
 
-  // V-02 every reference resolves to an existing entity of the expected type.
+  // V-02 every reference resolves to an existing entity of the expected type; at domain-file scope a
+  // well-typed ekgId that leaves the file is legitimate (a cross-domain node, a prerequisite elsewhere).
+  const external = (ref: string, type: EkgType) => options.allowExternalReferences === true && isEkgId(ref) && parseEkgId(ref).type === type;
   for (const e of entities) {
     for (const { field, type, refs } of refFields(e)) {
       refs.forEach((ref, i) => {
-        if (!index.resolve(ref, type)) {
+        if (!index.resolve(ref, type) && !external(ref, type)) {
           const listField = field === 'prerequisites' || field === 'outcomes' || field === 'assessments' || field === 'requiredOfferings' || field === 'outcomeMappings';
           const path = refs.length === 1 && !listField ? field : `${field}[${i}]`;
           fail(e, 'V-02', `${field} references ${type} "${ref}", which does not exist`, path);
@@ -485,7 +493,7 @@ export function validateDomainFile(input: unknown): DomainFileValidation {
     if (!nodeIds.has(key) && key !== file.domain.ekgId) warnings.push({ rule: 'V-23', severity: 'warning', slug: '(domain file)', ekgId: key, message: `body has an entry for ${key}, which is not a node of this domain file`, path: 'body' });
   }
 
-  const graph = validateGraph([file.domain, ...file.nodes], { mode: 'artifact', resources: file.resources });
+  const graph = validateGraph([file.domain, ...file.nodes], { mode: 'artifact', resources: file.resources, allowExternalReferences: true });
   errors.push(...graph.errors);
   warnings.push(...graph.warnings);
   return { ok: errors.length === 0, errors, warnings, file };

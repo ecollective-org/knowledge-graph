@@ -89,8 +89,8 @@ describe('source schemas (SPEC §3, Open Degree frontmatter)', () => {
     expect(parsed.alignments).toEqual([]);
     expect(parsed.sources).toEqual([]);
     expect(parsed.segments[1]).toEqual({ title: 'Transformations and rigid motions', kind: 'core', outcomes: ['represent-transformations', 'describe-rigid-motions'] });
-    expect(entity.safeParse({ ...geometry.nodes[5], kind: 'syllabus' }).success).toBe(false);
-    expect(entity.safeParse({ ...geometry.nodes[5], segments: [{ title: 'Empty', outcomes: [] }] }).success).toBe(false);
+    expect(entity.safeParse({ ...geometry.nodes.find((n) => n.type === 'course')!, kind: 'syllabus' }).success).toBe(false);
+    expect(entity.safeParse({ ...geometry.nodes.find((n) => n.type === 'course')!, segments: [{ title: 'Empty', outcomes: [] }] }).success).toBe(false);
   });
 
   it('rejects a resource without an absolute URL (V-01)', () => {
@@ -165,7 +165,7 @@ describe('frontier overlays on Outcome and Resource (SPEC §3.2, §3.6; 0.2.0)',
   const khan = geometry.resources.find((r) => r.ekgId === 'ekg:resource:01JBXKHANACADEMY0000000000')!;
 
   it('carries volatility and evidenceClass on an outcome, optional, and never a frontier level (EKG-SPEC-147)', () => {
-    const base = geometry.nodes[0]!;
+    const base = geometry.nodes.find((n) => n.type === 'outcome')!;
     expect(artifact.outcome.safeParse({ ...base, volatility: 'frontier', evidenceClass: 'preprint' }).success).toBe(true);
     expect(artifact.outcome.safeParse({ ...base, volatility: 'settled' }).success).toBe(false);
     expect(artifact.outcome.safeParse({ ...base, level: 'frontier' }).success).toBe(false);
@@ -229,8 +229,8 @@ describe('artifact schemas (SPEC §8.3)', () => {
   });
 
   it('requires provenance and ekgId references in the artifact', () => {
-    const { provenance: _omit, ...withoutProvenance } = geometry.nodes[0]!;
+    const { provenance: _omit, ...withoutProvenance } = geometry.nodes.find((n) => n.type === 'outcome')!;
     expect(artifact.node.safeParse(withoutProvenance).success).toBe(false);
-    expect(artifact.node.safeParse({ ...geometry.nodes[1], prerequisites: ['define-geometric-terms'] }).success).toBe(false);
+    expect(artifact.node.safeParse({ ...geometry.nodes.find((n) => n.slug === 'represent-transformations'), prerequisites: ['define-geometric-terms'] }).success).toBe(false);
   });
 });
