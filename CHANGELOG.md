@@ -48,6 +48,10 @@ is optional, and nothing here changes the meaning of an existing field.
   program classification; an exam-outline alignment is `narrower` or `related`), in
   `validateGraph` and `validateImportBundle`; V-22 now covers course alignments. DIY Degree's
   obligation EKG-SPEC-143.
+- Producer-minted identifiers (SPEC §9.6.1; EKG-SPEC-144 to EKG-SPEC-146; #10): an outcome
+  proposal in a bundle carries an optional `ekgId`, which `validateImportBundle` accepts from a
+  registered product identity and rejects from anyone else (V-26). EKG-SPEC-61's "no `ekgId`"
+  bullet, EKG-SPEC-86 and the §9.4 checklist (item 10) are amended in place.
 
 ### Changed
 

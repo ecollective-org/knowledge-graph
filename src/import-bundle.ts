@@ -132,6 +132,8 @@ export const proposals = {
     alignments: z.array(alignment).default([]),
     /** Required by V-27; optional here so its absence is reported under that rule, not V-01. */
     dedupe: dedupeEvidence.optional(),
+    /** The id a registered product minted for a node its learners already reference (EKG-SPEC-144); V-26 rejects it from anyone else. */
+    ekgId: ekgId('outcome').optional(),
   }),
   edges: proposed({ from: bundleRef, to: bundleRef, kind: z.literal('prerequisite') }),
   aliases: proposed({ outcome: ekgId('outcome'), aliases: z.array(z.string().min(1)).min(1) }),
@@ -430,6 +432,15 @@ export function validateImportBundle(input: unknown): ImportBundleValidation {
           if (!listed.has(ref)) fail(slot, 'V-29', `segment "${segment.title}" lists outcome ${ref}, which is not in the course's outcomes`, `segments[${si}].outcomes[${oi}]`);
         });
       });
+    }
+  }
+
+  // V-26: a producer-minted ekgId on a proposal is accepted from a registered product identity only (EKG-SPEC-144/146).
+  const registered = isRegisteredIdentity(envelope.data.producer.identity);
+  for (const slot of slots) {
+    const minted = (slot.item as { ekgId?: string }).ekgId;
+    if (minted && !registered) {
+      fail(slot, 'V-26', `${minted} was minted by ${envelope.data.producer.identity}, which is not a registered product identity; a producer never mints an ekgId (EKG-SPEC-122)`, 'ekgId');
     }
   }
 

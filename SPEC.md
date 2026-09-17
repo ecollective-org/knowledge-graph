@@ -917,7 +917,7 @@ MUST be rejected on sight.
 - **Files**: one Markdown file per entity, in the correct collection folder, kebab-case file name matching the intended `slug`, valid YAML frontmatter, lists one item per line.
 - **Frontmatter**: `status: stub` or `status: draft` only; `version: 0.1.0`; `license: CC BY-SA 4.0`; `contributors` naming the contributing bot; a complete `provenance` block.
 - **Body**: the pull request body states why the node is needed, how many distinct learners or creators reached for it, what search was done to confirm no existing node covers it (the slugs and aliases checked), and — for an AI-authored proposal — the model id and prompt version.
-- **No `ekgId`** on a genuinely new entity: it is minted by the publisher on merge, so that identity is never asserted by a proposal that may be rejected or merged into something else. A proposal that *modifies* an existing entity MUST carry that entity's existing `ekgId` unchanged.
+- **No `ekgId`** on a genuinely new entity, unless a registered product identity minted it and asserts it under EKG-SPEC-144: otherwise it is minted by the publisher on merge, so that identity is never asserted by a proposal that may be rejected or merged into something else. A proposal that *modifies* an existing entity MUST carry that entity's existing `ekgId` unchanged. *Amended in 0.2.0 (Change G).*
 
 ### 9.3 Bot identity
 
@@ -944,6 +944,7 @@ An Open Degree maintainer works through this list. Any "no" is a change request 
 7. Is `provenance` complete, and free of personal data?
 8. Does the build pass — schemas, reference resolution, cycle check?
 9. Is the licence grant clear: is the contributing product entitled to offer this under CC BY-SA 4.0?
+10. If the proposal carries an `ekgId` for a new entity: did a registered product identity (§9.3) mint it, is it a valid id of the right type (EKG-SPEC-15/17/18), and does the pull request assert that learners or creators already reference it (EKG-SPEC-144)? If the concept already exists, the existing node survives (EKG-SPEC-145).
 
 ### 9.5 Conflicts and merges
 
@@ -970,6 +971,28 @@ course, not a measurable statement), `too-broad` (two or more concepts, needs sp
 **EKG-SPEC-67** A rejection MUST name a reason and, for `duplicate`, MUST name the surviving node's
 slug. A consumer records the rejection and MUST NOT re-propose the same content without addressing
 the reason.
+
+### 9.6.1 Producer-minted identifiers
+
+EKG-SPEC-16 has always said an `ekgId` is minted once, by whichever product creates the node. A
+learning engine creates provisional nodes in real time and learners master against them; if the
+publisher minted a second id on merge, every graduated node would need a merge and an atomic
+mastery rewrite (EKG-SPEC-65) for a concept that never had two identities. From 0.2.0 the id a
+registered product minted survives.
+
+**EKG-SPEC-144** A proposal opened by a registered product identity (§9.3) MAY carry the `ekgId`
+that product minted for a new entity, provided the id is valid and of the right type
+(EKG-SPEC-15/17/18) and the pull request asserts that learners or creators already reference it.
+The same holds for a proposal a registered identity submits through an import bundle (§9.7).
+
+**EKG-SPEC-145** Open Degree MUST adopt a producer-minted id on merge, unless the proposal
+duplicates an existing node, in which case the existing node survives and EKG-SPEC-64/65 apply as
+for any merge: the product's id becomes the deprecated side of a supersession, and the product
+rewrites its records to the survivor.
+
+**EKG-SPEC-146** A proposal from any other source (a human contributor, an AI producer that is not a
+registered product identity) carries no `ekgId` for a new entity; an import bundle never mints one
+(EKG-SPEC-122). The publisher mints on merge, as before.
 
 ### 9.7 Import bundles
 
@@ -1184,7 +1207,7 @@ any violation (EKG-SPEC-56).
 | V-23 | Artifact only: every `resourceIds` entry resolves to a resource in the same domain file; every edge `from` is in the file; every edge whose `to` is outside carries `targetDomain`. | added |
 | V-24 | Artifact only: every published file's `sha256` matches `checksums.json`. | added |
 | V-25 | Bundle only: a proposed outcome's `statement`, with whitespace collapsed and case folded, is not the `statement` of a standard proposed in the same bundle (EKG-SPEC-117). | added 0.2.0 |
-| V-26 | Bundle only: `tmp:` ids are unique within the bundle; every `tmp:` reference resolves to a proposal of the expected collection; every `ekgId` reference is well-formed and of the expected type; no proposal carries a minted `ekgId` (EKG-SPEC-122). | added 0.2.0 |
+| V-26 | Bundle only: `tmp:` ids are unique within the bundle; every `tmp:` reference resolves to a proposal of the expected collection; every `ekgId` reference is well-formed and of the expected type; a proposal carries a minted `ekgId` only when the producer is a registered product identity (EKG-SPEC-122/144). | added 0.2.0 |
 | V-27 | Bundle only: every new outcome carries `dedupe` evidence, and an `alias_of` or `duplicate_of` decision names the existing outcome in `of` (EKG-SPEC-123). | added 0.2.0 |
 | V-28 | Bundle only: every proposed resource carries `license` and an `embedPolicy` other than `unknown`; every proposed reference item carries `retrievedAt` and a URL (EKG-SPEC-125). | added 0.2.0 |
 | V-29 | Every outcome listed in a course's `segments[]` appears in that course's `outcomes` (EKG-SPEC-135). Also run over bundle courses. | added 0.2.0 |
@@ -1276,7 +1299,7 @@ rather than claim the contract.
 
 - [ ] **EKG-SPEC-84** Publishes the artifact at `https://www.opendegree.org/api/graph/v1/` per §8, on every build, with manifest, per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots.
 - [ ] **EKG-SPEC-85** Runs every validation rule in §11 in its build and fails the build on any violation.
-- [ ] **EKG-SPEC-86** Mints `ekgId` on merge for every new entity, and never re-mints.
+- [ ] **EKG-SPEC-86** Mints `ekgId` on merge for every new entity that arrives without one, adopts a producer-minted id under EKG-SPEC-145, and never re-mints. *Amended in 0.2.0 (Change G).*
 - [ ] **EKG-SPEC-87** Maintains slug history: `previousSlugs[]` on rename, and an HTTP redirect from every previous slug.
 - [ ] **EKG-SPEC-88** Reviews inbound contribution pull requests against §9.4, records a rejection reason from §9.6, and publishes its review SLA.
 - [ ] **EKG-SPEC-89** Owns the shared `status` field. Never asks another product to assert adoption.

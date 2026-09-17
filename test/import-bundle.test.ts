@@ -193,6 +193,23 @@ describe('import bundles (SPEC §9.7)', () => {
     expect(rulesOf(bad.items, 'tmp:prove-theorems-about-triangles')).toEqual(['V-30']);
   });
 
+  it('accepts a producer-minted ekgId from a registered product identity only (EKG-SPEC-144/146, V-26)', () => {
+    const b = bundle();
+    (b.proposals.outcomes[0] as { ekgId?: string }).ekgId = 'ekg:outcome:01JBX9M1NTEDBYD1YDEGREE000';
+    const product = validateImportBundle(b);
+    expect(product.errors).toEqual([]);
+    expect(product.bundle?.proposals.outcomes[0]?.ekgId).toBe('ekg:outcome:01JBX9M1NTEDBYD1YDEGREE000');
+
+    b.producer.identity = 'contributor:geometry-research';
+    const human = validateImportBundle(b);
+    expect(rulesOf(human.items, 'tmp:prove-theorems-about-triangles')).toEqual(['V-26']);
+    expect(human.items[0]?.errors[0]?.path).toBe('ekgId');
+
+    (b.proposals.outcomes[0] as { ekgId?: string }).ekgId = 'ekg:standard:01JBX9M1NTEDBYD1YDEGREE000';
+    b.producer.identity = 'diy-degree-curation';
+    expect(validateImportBundle(b).items[0]?.errors[0]?.rule).toBe('V-09');
+  });
+
   it('names the report shape the commons answers with (EKG-SPEC-127)', () => {
     const result = validateImportBundle(bundle());
     const report = importReport.safeParse({ bundleVersion: IMPORT_BUNDLE_VERSION, producer: bundle().producer, receivedAt: at, items: result.items });
