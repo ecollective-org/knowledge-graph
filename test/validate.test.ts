@@ -300,6 +300,19 @@ describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
     expect(errors[0]).toMatchObject({ rule: 'V-29', slug: 'congruence-through-rigid-motions', path: 'segments[0].outcomes[0]' });
   });
 
+  it('accepts the frontier overlays in a domain file with no warnings, and names a subKind contradiction (0.2.0)', () => {
+    const file = clone(geometry);
+    Object.assign(file.nodes[0]!, { volatility: 'evolving', evidenceClass: 'mixed' });
+    Object.assign(file.resources[0]!, { subKind: 'talk', publishedAt: '2024-01-15', externalIds: { youtube: 'dQw4w9WgXcQ' }, transcript: { available: true, retrievableUnderTerms: true }, platformId: 'ekg:platform:01JBXP7ATF0RMKHAN000000000' });
+    const result = validateDomainFile(file);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    Object.assign(file.resources[0]!, { subKind: 'repo' });
+    const bad = validateDomainFile(file);
+    expect(bad.errors[0]).toMatchObject({ rule: 'V-01', slug: '(domain file)' });
+    expect(bad.errors[0]?.path).toBe('resources[0].subKind');
+  });
+
   it('V-23 rejects a resourceIds entry that is not in the file', () => {
     const file = clone(geometry);
     (file.nodes[0] as { resourceIds: string[] }).resourceIds.push('ekg:resource:01JBXMSSNGRSRC000000000000');

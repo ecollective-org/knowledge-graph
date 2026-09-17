@@ -111,6 +111,71 @@ export type ProvenanceSource = (typeof PROVENANCE_SOURCES)[number];
 export type AudienceRating = (typeof AUDIENCE_RATINGS)[number];
 export type AudienceDescriptor = (typeof AUDIENCE_DESCRIPTORS)[number];
 
+/** How settled an outcome's claim is, never how hard (SPEC §3.2, EKG-SPEC-147). */
+export const VOLATILITIES = ['stable', 'evolving', 'frontier'] as const;
+export const EVIDENCE_CLASSES = ['peer_reviewed', 'preprint', 'vendor_docs', 'single_source', 'mixed'] as const;
+export type Volatility = (typeof VOLATILITIES)[number];
+export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
+
+/** A refinement of a resource's `kind` that never contradicts it (SPEC §3.6, EKG-SPEC-150). */
+export const RESOURCE_SUBKINDS = [
+  'course',
+  'lesson_plan',
+  'syllabus',
+  'worksheet',
+  'paper',
+  'preprint',
+  'docs',
+  'changelog',
+  'podcast',
+  'talk',
+  'repo',
+] as const;
+export type ResourceSubKind = (typeof RESOURCE_SUBKINDS)[number];
+/** Which `kind` each `subKind` sits under (EKG-SPEC-150); `podcast` sits under `reading` until an `audio` kind exists (EKG-OQ-10). */
+export const SUBKIND_KINDS: Readonly<Record<ResourceSubKind, readonly ResourceKind[]>> = {
+  course: ['interactive', 'reading'],
+  lesson_plan: ['reading'],
+  syllabus: ['reading'],
+  worksheet: ['reading'],
+  paper: ['reading'],
+  preprint: ['reading'],
+  docs: ['reading'],
+  changelog: ['reading'],
+  podcast: ['reading'],
+  talk: ['video'],
+  repo: ['tool'],
+};
+
+/** The registered schemes of `externalIds` (EKG-SPEC-153); a consumer ignores a scheme it does not know. */
+export const EXTERNAL_ID_SCHEMES = ['doi', 'arxiv', 'openalex', 'isbn', 'youtube', 'vimeo'] as const;
+export const EXTERNAL_ID_KEY_PATTERN = /^[a-z][a-z0-9-]*$/;
+/** Provider- and registry-scoped identifiers of a resource, keyed by scheme: `{ youtube: "dQw4w9WgXcQ" }`, `{ doi: "10.1000/182" }`. */
+export const externalIds = z.record(
+  z.string().regex(EXTERNAL_ID_KEY_PATTERN, 'An externalIds key is a lowercase scheme name such as doi or youtube (V-01)'),
+  z.string().min(1),
+);
+export type ExternalIds = z.infer<typeof externalIds>;
+
+/** What is known about a resource's standing as evidence (EKG-SPEC-151/152). */
+export const evidenceSignals = z.object({
+  citationCount: z.number().int().nonnegative().optional(),
+  citationSource: z.string().optional(),
+  venue: z.string().optional(),
+  peerReviewed: z.boolean().optional(),
+  retracted: z.boolean().optional(),
+  retractedAt: z.iso.datetime().optional(),
+});
+export type EvidenceSignals = z.infer<typeof evidenceSignals>;
+
+/** Whether a resource's caption or transcript text exists and may be retrieved under the provider's terms (EKG-SPEC-154). */
+export const transcript = z.object({
+  available: z.boolean(),
+  source: z.string().optional(),
+  retrievableUnderTerms: z.boolean().optional(),
+});
+export type Transcript = z.infer<typeof transcript>;
+
 const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 
 /** Who or what authored a thing and who reviewed it (SPEC §3.8, §7.3). Immutable (EKG-SPEC-13). */
@@ -242,25 +307,52 @@ export const resourceFields = {
   lastVerifiedAt: z.string().datetime().optional(),
   /** Absent means `unrated` (EKG-SPEC-110). */
   audience: audience.optional(),
+  /** Refines `kind` and never contradicts it (EKG-SPEC-150). */
+  subKind: z.enum(RESOURCE_SUBKINDS).optional(),
+  /** A date or a datetime: a paper's publication date is usually a day. */
+  publishedAt: z.union([z.iso.date(), z.iso.datetime()]).optional(),
+  externalIds: externalIds.optional(),
+  evidenceSignals: evidenceSignals.optional(),
+  transcript: transcript.optional(),
+  /** The commons `platform` this resource comes from (EKG-SPEC-155). */
+  platformId: ekgId('platform').optional(),
 };
+
+/** `subKind` sits under its `kind` (EKG-SPEC-150); a mismatch is a schema error (V-01). */
+export function withSubKindRule<T extends z.ZodObject<z.ZodRawShape>>(schema: T): T {
+  return schema.superRefine((value, ctx) => {
+    const v = value as { kind?: ResourceKind; subKind?: ResourceSubKind };
+    if (v.subKind && v.kind && !SUBKIND_KINDS[v.subKind].includes(v.kind)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['subKind'],
+        message: `subKind ${v.subKind} sits under ${SUBKIND_KINDS[v.subKind].join(' or ')}, not ${v.kind} (V-01)`,
+      });
+    }
+  }) as T;
+}
 
 /**
  * A resource as authored inline on an outcome or a course (SPEC §3.6). Every added field is
  * optional here so existing Open Degree content stays valid; §7.2 is the bar for serving.
  */
-export const resource = z.object({
-  ekgId: ekgId('resource').optional(),
-  ...resourceFields,
-  provenance: provenance.optional(),
-});
+export const resource = withSubKindRule(
+  z.object({
+    ekgId: ekgId('resource').optional(),
+    ...resourceFields,
+    provenance: provenance.optional(),
+  }),
+);
 export type Resource = z.infer<typeof resource>;
 
 /** A resource as it appears in the artifact: identity and provenance required (EKG-SPEC-24, -41). */
-export const artifactResource = z.object({
-  ekgId: ekgId('resource'),
-  ...resourceFields,
-  provenance,
-});
+export const artifactResource = withSubKindRule(
+  z.object({
+    ekgId: ekgId('resource'),
+    ...resourceFields,
+    provenance,
+  }),
+);
 export type ArtifactResource = z.infer<typeof artifactResource>;
 
 /** Commons plus identity, on every entity (EKG-SPEC-04). Provenance optional in source. */
@@ -327,6 +419,9 @@ export const outcome = superseded(
     alignments: z.array(alignment).default([]),
     aliases: z.array(z.string()).default([]),
     resources: z.array(resource).default([]),
+    /** How settled the claim is, never how hard; `level` says how hard (EKG-SPEC-147). */
+    volatility: z.enum(VOLATILITIES).optional(),
+    evidenceClass: z.enum(EVIDENCE_CLASSES).optional(),
     supersededBy: wikilink.optional(),
     ...commons,
   }),
@@ -427,6 +522,8 @@ const artifactOutcome = superseded(
     aliases: z.array(z.string()).default([]),
     /** Resources are emitted once per domain file and referenced by id (EKG-SPEC-48). */
     resourceIds: z.array(ekgId('resource')).default([]),
+    volatility: z.enum(VOLATILITIES).optional(),
+    evidenceClass: z.enum(EVIDENCE_CLASSES).optional(),
     supersededBy: ekgId('outcome').optional(),
     ...artifactCommons,
   }),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AUDIENCE_DESCRIPTORS, artifact, audience, entity, outcome, provenance, resource, wikilink } from '../src/index.js';
+import { AUDIENCE_DESCRIPTORS, RESOURCE_SUBKINDS, SUBKIND_KINDS, artifact, audience, entity, externalIds, outcome, provenance, resource, wikilink } from '../src/index.js';
 import geometry from './fixtures/geometry.json' with { type: 'json' };
 
 const ISSUE_MESSAGES = (r: { success: boolean; error?: { issues: { message: string }[] } }) =>
@@ -158,6 +158,47 @@ describe('audience (SPEC §7.4)', () => {
     expect(audience.safeParse({ basis: { automated: { modelId: 'm', promptVersion: 'p', at: 'yesterday' } } }).success).toBe(false);
     expect(audience.safeParse({ confidence: 1.5 }).success).toBe(false);
     expect(audience.safeParse({ version: 0 }).success).toBe(false);
+  });
+});
+
+describe('frontier overlays on Outcome and Resource (SPEC §3.2, §3.6; 0.2.0)', () => {
+  const khan = geometry.resources.find((r) => r.ekgId === 'ekg:resource:01JBXKHANACADEMY0000000000')!;
+
+  it('carries volatility and evidenceClass on an outcome, optional, and never a frontier level (EKG-SPEC-147)', () => {
+    const base = geometry.nodes[0]!;
+    expect(artifact.outcome.safeParse({ ...base, volatility: 'frontier', evidenceClass: 'preprint' }).success).toBe(true);
+    expect(artifact.outcome.safeParse({ ...base, volatility: 'settled' }).success).toBe(false);
+    expect(artifact.outcome.safeParse({ ...base, level: 'frontier' }).success).toBe(false);
+    const parsed = artifact.outcome.parse(base);
+    expect(parsed.volatility).toBeUndefined();
+  });
+
+  it('refines a resource kind with subKind and refuses a contradiction (EKG-SPEC-150)', () => {
+    expect(RESOURCE_SUBKINDS).toHaveLength(11);
+    for (const sub of RESOURCE_SUBKINDS) expect(SUBKIND_KINDS[sub].length).toBeGreaterThan(0);
+    expect(artifact.resource.safeParse({ ...khan, kind: 'video', subKind: 'talk' }).success).toBe(true);
+    const wrong = artifact.resource.safeParse({ ...khan, kind: 'video', subKind: 'paper' });
+    expect(wrong.success).toBe(false);
+    expect(ISSUE_MESSAGES(wrong)[0]).toMatch(/subKind paper sits under reading, not video \(V-01\)/);
+    expect(resource.safeParse({ title: 'x', url: 'https://example.org/a', kind: 'reading', subKind: 'podcast' }).success).toBe(true);
+  });
+
+  it('accepts a date or a datetime for publishedAt, keys externalIds by scheme, and carries evidenceSignals, transcript and platformId', () => {
+    const full = {
+      ...khan, publishedAt: '2019-06-11',
+      externalIds: { youtube: 'dQw4w9WgXcQ', doi: '10.1000/182' },
+      evidenceSignals: { citationCount: 12, citationSource: 'openalex', peerReviewed: false, retracted: false },
+      transcript: { available: true, source: 'youtube', retrievableUnderTerms: false },
+      platformId: 'ekg:platform:01JBXP7ATF0RMKHAN000000000',
+    };
+    const r = artifact.resource.safeParse(full);
+    expect(r.success, ISSUE_MESSAGES(r).join('; ')).toBe(true);
+    expect(artifact.resource.safeParse({ ...full, publishedAt: '2019-06-11T10:00:00Z' }).success).toBe(true);
+    expect(artifact.resource.safeParse({ ...full, publishedAt: 'June 2019' }).success).toBe(false);
+    expect(artifact.resource.safeParse({ ...full, platformId: 'ekg:outcome:01JBX0DEFNTERMS00000000000' }).success).toBe(false);
+    const badKey = externalIds.safeParse({ YouTube: 'x' });
+    expect(badKey.success).toBe(false); // an invalid record key; the validator tags it V-01
+    expect(externalIds.safeParse({ 'semantic-scholar': 'abc' }).success).toBe(true);
   });
 });
 
