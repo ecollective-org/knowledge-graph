@@ -73,6 +73,26 @@ describe('source schemas (SPEC §3, Open Degree frontmatter)', () => {
     expect(ISSUE_MESSAGES(r)[0]).toContain('V-05');
   });
 
+  it('makes a course a path definition with defaults a 0.1 file never wrote (SPEC §3.3, 0.2.0)', () => {
+    const parsed = entity.parse({
+      ekgId: 'ekg:course:01JBX5CRSCNGRNCE0000000000', slug: 'congruence-through-rigid-motions', type: 'course',
+      title: 'Congruence Through Rigid Motions', description: 'From definitions to proof.', domain: '[[geometry]]',
+      outcomes: ['[[define-geometric-terms]]', '[[represent-transformations]]', '[[describe-rigid-motions]]', '[[prove-congruence-with-rigid-motions]]'],
+      segments: [
+        { title: 'Definitions', outcomes: ['[[define-geometric-terms]]'] },
+        { title: 'Transformations and rigid motions', outcomes: ['[[represent-transformations|Transformations]]', '[[describe-rigid-motions]]'] },
+        { title: 'Congruence', kind: 'core', outcomes: ['[[prove-congruence-with-rigid-motions]]'] },
+      ],
+    });
+    if (parsed.type !== 'course') throw new Error('not a course');
+    expect(parsed.kind).toBe('curated_path');
+    expect(parsed.alignments).toEqual([]);
+    expect(parsed.sources).toEqual([]);
+    expect(parsed.segments[1]).toEqual({ title: 'Transformations and rigid motions', kind: 'core', outcomes: ['represent-transformations', 'describe-rigid-motions'] });
+    expect(entity.safeParse({ ...geometry.nodes[5], kind: 'syllabus' }).success).toBe(false);
+    expect(entity.safeParse({ ...geometry.nodes[5], segments: [{ title: 'Empty', outcomes: [] }] }).success).toBe(false);
+  });
+
   it('rejects a resource without an absolute URL (V-01)', () => {
     expect(resource.safeParse({ title: 'x', url: '/relative', kind: 'video' }).success).toBe(false);
     expect(resource.safeParse({ title: 'x', url: 'https://example.org/a', kind: 'video' }).success).toBe(true);
@@ -152,6 +172,19 @@ describe('artifact schemas (SPEC §8.3)', () => {
       const r = artifact.resource.safeParse(res);
       expect(r.success, `${res.title}: ${ISSUE_MESSAGES(r).join('; ')}`).toBe(true);
     }
+  });
+
+  it('carries the path-definition fields on an artifact course, with crossDomain when it spans (EKG-SPEC-136)', () => {
+    const course = geometry.nodes.find((n) => n.type === 'course')!;
+    expect(course).toMatchObject({ kind: 'curated_path', segments: [], alignments: [], sources: [] });
+    const spanning = artifact.course.safeParse({
+      ...course, crossDomain: true, kind: 'curriculum',
+      segments: [{ title: 'Definitions', kind: 'core', outcomes: ['ekg:outcome:01JBX0DEFNTERMS00000000000'] }],
+      alignments: [{ framework: 'Advanced Placement Course and Exam Descriptions', code: 'AP-GEOMETRY' }],
+      sources: [{ title: 'NYS Geometry course description', url: 'https://www.nysed.gov/standards-instruction/mathematics', retrievedAt: '2026-09-16T02:00:00Z' }],
+    });
+    expect(spanning.success, ISSUE_MESSAGES(spanning).join('; ')).toBe(true);
+    expect(artifact.course.safeParse({ ...course, segments: [{ title: 'x', outcomes: ['define-geometric-terms'] }] }).success).toBe(false);
   });
 
   it('requires provenance and ekgId references in the artifact', () => {

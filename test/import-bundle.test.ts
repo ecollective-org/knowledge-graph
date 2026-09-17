@@ -170,6 +170,29 @@ describe('import bundles (SPEC §9.7)', () => {
     expect(result.warnings.map((w) => [w.rule, w.slug])).toEqual([['V-22', 'tmp:prove-theorems-about-triangles']]);
   });
 
+  it('proposes a path definition with segments over bundle-local and existing outcomes (Change D)', () => {
+    const b = bundle();
+    (b.proposals as Record<string, unknown>).courses = [{
+      localId: 'tmp:nys-regents-geometry', confidence: 0.6, provenance: ai,
+      title: 'NYS Regents Geometry', description: 'The congruence strand and beyond.', kind: 'curriculum',
+      domain: 'ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9',
+      outcomes: ['ekg:outcome:01JBX4TRNGCRTRA00000000000', 'tmp:prove-theorems-about-triangles'],
+      segments: [{ title: 'Congruence', outcomes: ['ekg:outcome:01JBX4TRNGCRTRA00000000000'] }, { title: 'Beyond', kind: 'beyond', outcomes: ['tmp:prove-theorems-about-triangles'] }],
+      alignments: [{ framework: 'NYS Next Generation Mathematics Learning Standards', code: 'GEO', relation: 'related' }],
+      sources: [{ title: 'NYS Next Generation Mathematics Learning Standards (P-12)', url: 'https://www.nysed.gov/standards-instruction/mathematics', retrievedAt: at }],
+    }];
+    const ok = validateImportBundle(b);
+    expect(ok.errors).toEqual([]);
+    expect(ok.items.find((i) => i.ref === 'tmp:nys-regents-geometry')?.decision).toBe('accepted');
+    expect(ok.bundle?.proposals.courses[0]?.segments[1]?.kind).toBe('beyond');
+
+    (b.proposals as unknown as { courses: { segments: { outcomes: string[] }[] }[] }).courses[0]!.segments[1]!.outcomes = ['ekg:outcome:01JBX0DEFNTERMS00000000000'];
+    b.proposals.outcomes[0]!.alignments = [{ framework: 'Classification of Instructional Programs, 2020', code: '27.0101' }];
+    const bad = validateImportBundle(b);
+    expect(rulesOf(bad.items, 'tmp:nys-regents-geometry')).toEqual(['V-29']);
+    expect(rulesOf(bad.items, 'tmp:prove-theorems-about-triangles')).toEqual(['V-30']);
+  });
+
   it('names the report shape the commons answers with (EKG-SPEC-127)', () => {
     const result = validateImportBundle(bundle());
     const report = importReport.safeParse({ bundleVersion: IMPORT_BUNDLE_VERSION, producer: bundle().producer, receivedAt: at, items: result.items });

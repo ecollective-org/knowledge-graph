@@ -167,6 +167,43 @@ describe('validateGraph, source mode (SPEC §11)', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('V-29 requires every segment outcome to be one of the course\'s outcomes', () => {
+    const graph = sourceGraph();
+    graph.push({
+      ekgId: 'ekg:course:01JBX5CRSCNGRNCE0000000000', slug: 'rigid-motions-path', type: 'course', title: 'Rigid motions', description: 'A path.',
+      domain: 'geometry', outcomes: ['define-geometric-terms', '[[represent-transformations]]'],
+      segments: [{ title: 'Definitions', outcomes: ['[[define-geometric-terms|Definitions]]'] }, { title: 'Motions', kind: 'beyond', outcomes: ['represent-transformations', 'describe-rigid-motions'] }],
+      provenance: { source: 'opendegree', generatedAt: '2026-09-05T04:12:07Z' },
+    } as never);
+    const { errors } = validateGraph(graph);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({ rule: 'V-29', slug: 'rigid-motions-path', path: 'segments[1].outcomes[1]' });
+  });
+
+  it('V-30 keeps a program classification off outcomes and makes exam-outline alignments narrower or related', () => {
+    const graph = sourceGraph();
+    (graph[2] as { alignments: unknown[] }).alignments = [
+      { framework: 'Classification of Instructional Programs, 2020', code: '27.0101', relation: 'broader' },
+      { framework: 'College-Level Examination Program', code: 'College Mathematics' },
+      { framework: 'College-Level Examination Program', code: 'College Mathematics', relation: 'narrower' },
+      { framework: 'Advanced Placement Course and Exam Descriptions', code: 'AP Precalculus', relation: 'related' },
+    ];
+    const { errors } = validateGraph(graph);
+    expect(errors.map((e) => [e.rule, e.path])).toEqual([['V-30', 'alignments[0]'], ['V-30', 'alignments[1].relation']]);
+    // A course aligns to the classification it mirrors; an unregistered framework on a course is a V-22 warning.
+    graph.push({
+      ekgId: 'ekg:course:01JBX5CRSCNGRNCE0000000000', slug: 'mathematics-template', type: 'course', title: 'Mathematics', description: 'A template.',
+      domain: 'geometry', outcomes: ['define-geometric-terms'], kind: 'program_template',
+      alignments: [{ framework: 'Classification of Instructional Programs, 2020', code: '27.0101', relation: 'broader' }, { framework: 'Texas Essential Knowledge and Skills', code: 'G.3' }],
+      sources: [{ title: 'IPEDS completions, CIP 27.0101', url: 'https://nces.ed.gov/ipeds/', retrievedAt: '2026-09-16T02:00:00Z' }],
+      provenance: { source: 'opendegree', generatedAt: '2026-09-05T04:12:07Z' },
+    } as never);
+    (graph[2] as { alignments: unknown[] }).alignments = [];
+    const result = validateGraph(graph);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.map((w) => [w.rule, w.slug])).toEqual([['V-22', 'mathematics-template']]);
+  });
+
   it('V-01, V-04, V-19, V-20 surface schema failures with their rule numbers', () => {
     const graph = sourceGraph();
     (graph[1] as Record<string, unknown>).supersededBy = 'represent-transformations';
@@ -252,6 +289,15 @@ describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
     expect(result.file?.resources[0]?.audience?.rating).toBe('all');
     (file.resources[0] as { audience?: unknown }).audience = { rating: 'mature' };
     expect(validateDomainFile(file).errors[0]?.rule).toBe('V-01');
+  });
+
+  it('V-29 runs in artifact mode over the Appendix B course', () => {
+    const file = clone(geometry);
+    const course = file.nodes.find((n) => n.type === 'course') as { segments: unknown[] };
+    course.segments = [{ title: 'Beyond', kind: 'beyond', outcomes: ['ekg:outcome:01JBX4TRNGCRTRA00000000000'] }];
+    const { errors } = validateDomainFile(file);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({ rule: 'V-29', slug: 'congruence-through-rigid-motions', path: 'segments[0].outcomes[0]' });
   });
 
   it('V-23 rejects a resourceIds entry that is not in the file', () => {

@@ -37,6 +37,17 @@ is optional, and nothing here changes the meaning of an existing field.
   row.
 - The commons' obligations, §13.5: EKG-SPEC-130 to EKG-SPEC-134. EKG-SPEC-62 amended with
   `opendegree-commons`; `GOVERNANCE.md` names the commons as a product.
+- `schema`: Course as a path definition: `kind` (`COURSE_KINDS`, default `curated_path`),
+  `segments` (`segment`, `artifactSegment`, `SEGMENT_KINDS`), `alignments` and `sources` on
+  `course` and `artifact.course`, and `crossDomain` on the artifact course (SPEC §3.3;
+  EKG-SPEC-135 to EKG-SPEC-139; #8). Import-bundle course proposals carry the same fields.
+- `frameworks`: rows `cip-2020`, `ap`, `clep`, `dsst`, `ace-credit`; every row carries `kind`,
+  `jurisdiction`, `subject` and `url`; `STATE_FRAMEWORK_ID_PATTERN`, `isStateFrameworkId`
+  (SPEC §6.2; EKG-SPEC-140 to EKG-SPEC-142).
+- `validate`: V-29 (segment outcomes are course outcomes) and V-30 (an outcome never aligns to a
+  program classification; an exam-outline alignment is `narrower` or `related`), in
+  `validateGraph` and `validateImportBundle`; V-22 now covers course alignments. DIY Degree's
+  obligation EKG-SPEC-143.
 
 ### Changed
 
@@ -45,6 +56,9 @@ is optional, and nothing here changes the meaning of an existing field.
 - `commons.ekgId`, `domainFile.body` keys and `changelogEntry.merges` accept graph-type ids only
   (`graphEkgId`), exactly the 0.1 acceptance set, so a reference id never enters a graph file.
 - A validation error's `path` renders as `nodes[8].type`, not `nodes.[8].type`.
+- A parsed course carries `kind`, `segments`, `alignments` and `sources` (defaulted), so Appendix
+  B's course and a 0.2 publisher's artifact courses gain four keys; a 0.1 consumer ignores them
+  (EKG-SPEC-78). `Framework.kind` is required in the registry type.
 
 ## 0.1.0 — 2026-09-05
 

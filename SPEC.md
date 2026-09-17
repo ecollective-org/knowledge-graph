@@ -164,14 +164,70 @@ state the same concept; the remedy for a duplicate is a merge (§5.4), not a sec
 
 ### 3.3 Course
 
-An optional curated path through the graph.
+An optional curated path through the graph, and from 0.2.0 a **path definition**: a state
+curriculum, an exam outline, a program template or a curated path, each a public fact that every
+product reads the same way.
 
-`type: "course"`, `title`, `description`, `domain` (ref → Domain), and `outcomes` (ref[] → Outcome,
-minimum 1) are required. Optional: `assessments` (ref[] → Assessment, `[]`), `estimatedHours`
-(positive `number`), `formats` (`string[]`, `[]`), `resources` (Resource[], `[]`). Plus the commons.
+| Field | Type | Notes |
+| --- | --- | --- |
+| `type` | `"course"` | required |
+| `title` | `string` | required |
+| `description` | `string` | required |
+| `domain` | ref → Domain | required; the primary domain |
+| `outcomes` | ref[] → Outcome | required, minimum 1; the flat, complete list |
+| `assessments` | ref[] → Assessment ? (`[]`) | |
+| `estimatedHours` | positive `number` ? | |
+| `formats` | `string[]` ? (`[]`) | |
+| `resources` | Resource[] ? (`[]`) | §3.6 |
+| `kind` **+** | `curated_path` \| `curriculum` \| `exam_outline` \| `program_template` ? (`curated_path`) | what the path mirrors; EKG-SPEC-137 |
+| `segments` **+** | Segment[] ? (`[]`) | ordered parts of `outcomes`, each `{ title, kind: core \| elective \| beyond, outcomes[] }`; EKG-SPEC-135 |
+| `alignments` **+** | Alignment[] ? (`[]`) | the framework the path mirrors, never an outcome's alignment; §6 |
+| `sources` **+** | Source[] ? (`[]`) | `{ title, url, license?, retrievedAt }`: what the definition was drawn from |
+| `crossDomain` **+** | `boolean` ? | artifact only; EKG-SPEC-136 |
+
+Plus the commons.
 
 **EKG-SPEC-09** A course MUST map to at least one outcome and MUST NOT be treated by any consumer as
 the unit of the curriculum. A consumer MAY ignore courses entirely and still be conformant.
+
+**EKG-SPEC-135** `outcomes` is the flat, complete list of a course's outcomes. `segments` partition
+it into ordered, titled parts: every outcome listed in a segment MUST appear in `outcomes` (V-29);
+the union of the segments MAY be smaller than `outcomes`. A segment's `kind` is `core`, `elective`,
+or `beyond` for a part that chains past the mirrored definition into advanced or frontier work.
+
+**EKG-SPEC-136** A course whose outcomes span domains keeps its primary `domain` and is emitted in
+every domain file its outcomes touch, marked `crossDomain: true`, exactly as an assessment or a
+credential is (EKG-SPEC-45/46). Consumers MUST deduplicate by `ekgId`.
+
+**EKG-SPEC-137** `kind` says what the path mirrors: a `curriculum` (a published syllabus, such as a
+state's Regents course), an `exam_outline` (AP, CLEP, DSST), a `program_template` (what programs
+classified under a CIP code typically require, derived from the catalog and adopted by a
+maintainer), or a `curated_path` (anything authored). A course's `alignments` name the framework
+it mirrors (`ap`, `clep`, `cip-2020`, a state framework), under the registry rules of §6
+(EKG-SPEC-33, V-22); they are never an outcome's alignment.
+
+**EKG-SPEC-138** The commons service MAY publish, beside the artifact, per-pair overlap tables for
+path definitions (the outcomes two definitions share, and those only in each) so that a consumer
+renders a comparison without recomputing it. The format is the service's own.
+
+**EKG-SPEC-139** A `program_template` MUST state the sample it was derived from (the number of
+programs, the CIP code, the retrieval window) in `sources`. A consumer that presents one MUST
+render it as "assembled to mirror the outcomes typically covered by programs classified under …"
+and MUST NOT claim equivalence, credit or a degree.
+
+Example: Open Degree's Geometry course, `congruence-through-rigid-motions`, with its Plan steps as
+segments. The course and its outcomes are real; the segmentation is illustrative.
+
+```yaml
+kind: curated_path
+segments:
+  - title: Definitions
+    outcomes: ["[[define-geometric-terms]]"]
+  - title: Transformations and rigid motions
+    outcomes: ["[[represent-transformations]]", "[[describe-rigid-motions]]"]
+  - title: Congruence
+    outcomes: ["[[prove-congruence-with-rigid-motions]]"]
+```
 
 ### 3.4 Assessment
 
@@ -524,15 +580,38 @@ them would make the graph a copy of one jurisdiction's curriculum.
 
 ### 6.2 Framework registry
 
-| `frameworkId` | `framework` | Authority |
-| --- | --- | --- |
-| `nys-nextgen-math` | NYS Next Generation Mathematics Learning Standards | New York State Education Department |
-| `ccss-math` | Common Core State Standards for Mathematics | CCSSO / NGA |
-| `ngss` | Next Generation Science Standards | Achieve, Inc. |
-| `ob3` | Open Badges 3.0 | 1EdTech |
+| `frameworkId` | `framework` | Authority | `kind` | Jurisdiction | Subject |
+| --- | --- | --- | --- | --- | --- |
+| `nys-nextgen-math` | NYS Next Generation Mathematics Learning Standards | New York State Education Department | `standards` | `US-NY` | mathematics |
+| `ccss-math` | Common Core State Standards for Mathematics | CCSSO / NGA | `standards` | `US` | mathematics |
+| `ngss` | Next Generation Science Standards | Achieve, Inc. | `standards` | `US` | science |
+| `ob3` | Open Badges 3.0 | 1EdTech | `credential_format` | international | all |
+| `cip-2020` | Classification of Instructional Programs, 2020 | National Center for Education Statistics | `program_classification` | `US` | all |
+| `ap` | Advanced Placement Course and Exam Descriptions | College Board | `exam_outline` | `US` | all |
+| `clep` | College-Level Examination Program | College Board | `exam_outline` | `US` | all |
+| `dsst` | DSST Exams | Prometric | `exam_outline` | `US` | all |
+| `ace-credit` | ACE CREDIT Recommendations | American Council on Education | `credit_recommendation` | `US` | all |
 
 `frameworkId` is optional in content and is added by the artifact builder when the `framework`
-string matches a registry row exactly.
+string matches a registry row exactly. A row's `kind` says what the framework is (`standards`,
+`program_classification`, `exam_outline`, `credit_recommendation`, `credential_format`); the
+package's registry also carries each row's `url`. *The last five rows and the `kind`, jurisdiction
+and subject columns were added in 0.2.0.*
+
+**EKG-SPEC-140** A state framework's `frameworkId` follows `<iso-region>-<subject>-<year>`,
+lowercased, with the ISO 3166-2 region code: `us-ny-science-2016`. `nys-nextgen-math` predates the
+convention and is kept. The commons service MAY hold a framework as reference data (§3.9) before
+it is registered here, but an alignment to an unregistered framework stays a warning (V-22) until
+the row is added by the same process as any other change to this specification.
+
+**EKG-SPEC-141** A `program_classification` framework MAY be aligned from a Course (EKG-SPEC-137)
+and from a reference `program` (§3.9), and MUST NOT be aligned from an Outcome: a program code says
+nothing about one "I can" statement (V-30).
+
+**EKG-SPEC-142** An Outcome's alignment to an `exam_outline` framework MUST carry `relation`
+`narrower` or `related`, because an outline item is a topic, not one statement (V-30). A
+machine-derived one carries `provenance.source: ai` and is reviewed by a human before the entity
+reaches `proposed` (EKG-SPEC-35).
 
 ### 6.3 Relation
 
@@ -704,7 +783,8 @@ it, every resource attached to those nodes.
 
 **EKG-SPEC-45** An assessment or credential with no explicit `domain` is assigned to the domain of
 its **first** listed outcome. When its outcomes span domains, it appears in each of their domain
-files and is marked `crossDomain: true`; consumers MUST deduplicate by `ekgId`.
+files and is marked `crossDomain: true`; consumers MUST deduplicate by `ekgId`. From 0.2.0 a
+course whose outcomes span domains is emitted the same way (EKG-SPEC-136).
 
 **EKG-SPEC-46** An edge whose target is in another domain is still emitted, with
 `targetDomain` naming the other domain's slug, so a consumer holding one domain knows an edge
@@ -1100,16 +1180,20 @@ any violation (EKG-SPEC-56).
 | V-19 | `provenance.modelId` and `provenance.promptVersion` are present when `provenance.source` is `ai`; `provenance.reviewedAt` is present when `reviewedBy` is. | added |
 | V-20 | `provenance` contains no string matching an email address pattern. | added |
 | V-21 | A credential references no outcome whose `status` is `stub`. | added |
-| V-22 | Every `alignment.framework` string that matches a registry name matches it exactly, including case; an unregistered framework is a warning, not an error. | added |
+| V-22 | Every `alignment.framework` string, on an outcome or a course, that matches a registry name matches it exactly, including case; an unregistered framework is a warning, not an error. | added; amended 0.2.0 (courses) |
 | V-23 | Artifact only: every `resourceIds` entry resolves to a resource in the same domain file; every edge `from` is in the file; every edge whose `to` is outside carries `targetDomain`. | added |
 | V-24 | Artifact only: every published file's `sha256` matches `checksums.json`. | added |
 | V-25 | Bundle only: a proposed outcome's `statement`, with whitespace collapsed and case folded, is not the `statement` of a standard proposed in the same bundle (EKG-SPEC-117). | added 0.2.0 |
 | V-26 | Bundle only: `tmp:` ids are unique within the bundle; every `tmp:` reference resolves to a proposal of the expected collection; every `ekgId` reference is well-formed and of the expected type; no proposal carries a minted `ekgId` (EKG-SPEC-122). | added 0.2.0 |
 | V-27 | Bundle only: every new outcome carries `dedupe` evidence, and an `alias_of` or `duplicate_of` decision names the existing outcome in `of` (EKG-SPEC-123). | added 0.2.0 |
 | V-28 | Bundle only: every proposed resource carries `license` and an `embedPolicy` other than `unknown`; every proposed reference item carries `retrievedAt` and a URL (EKG-SPEC-125). | added 0.2.0 |
+| V-29 | Every outcome listed in a course's `segments[]` appears in that course's `outcomes` (EKG-SPEC-135). Also run over bundle courses. | added 0.2.0 |
+| V-30 | An outcome's alignment never names a `program_classification` framework, and one that names an `exam_outline` framework carries `relation` `narrower` or `related` (EKG-SPEC-141/142); the kind comes from the registry. Also run over bundle outcomes. | added 0.2.0 |
 
 V-25 to V-28 apply to import bundles (§9.7) and are run by the commons importer (EKG-SPEC-129). A
 publisher's build and a consumer's import never see a bundle, so EKG-SPEC-74 is unchanged by them.
+V-29 and V-30 reach only fields no 0.1 content has (`segments`, and alignments to frameworks
+registered in 0.2.0), so existing conformant content cannot fail them.
 
 **EKG-SPEC-75** V-03's cycle check runs over the whole graph, not per domain. A per-domain
 coherence view ignores prerequisites outside the domain when it computes layers, which is correct
@@ -1210,6 +1294,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-98** Never contributes learner work or personal data through any channel (FR-EKG-12).
 - [ ] **EKG-SPEC-99** Renders attribution for Open Degree-derived definitions and for every resource (FR-EKG-13).
 - [ ] **EKG-SPEC-114** Enforces the audience ceiling of EKG-SPEC-111 for every learner under 18 from the artifact's `audience` block, holds any stricter rating of its own as an overlay, and never serves an `unrated` resource as a minor's primary (decision record 0008 there).
+- [ ] **EKG-SPEC-143** Follows a path definition by its `segments`, deduplicates a cross-domain course by `ekgId` (EKG-SPEC-136), and renders a program template with the phrase of EKG-SPEC-139 and never a claim of equivalence, credit or a degree (decision record 0005 there).
 
 ### 13.3 InstructOS — mapper
 
@@ -1587,6 +1672,7 @@ the complete Markdown.
                    "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
       "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
       "estimatedHours": 12, "formats": ["video", "interactive", "practice", "project"],
+      "kind": "curated_path", "segments": [], "alignments": [], "sources": [],
       "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000", "ekg:resource:01JBXGEGEBRA00000000000000",
                       "ekg:resource:01JBXNYSSTANDARDSPDF000000", "ekg:resource:01JBXREGENTSPAST0000000000"],
       "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",
