@@ -200,8 +200,8 @@ permanent from then on.
 | This record | — | #13 | — | — | 2026-09-17 |
 | A `audience` | #7 | #14 | EKG-SPEC-110 to 114 | — | 2026-09-17 |
 | F, H, I reference family, bundles, feed | #9 | #15 | EKG-SPEC-115 to 134; 15, 62 amended | V-25 to V-28 | 2026-09-17 |
-| D, E path definitions, registry | #8 | #16 | EKG-SPEC-135 to 143; 45 prose, V-22 amended | V-29, V-30 | pending |
-| G producer-minted ids | #10 | — | — | — | pending |
+| D, E path definitions, registry | #8 | #16 | EKG-SPEC-135 to 143; 45 prose, V-22 amended | V-29, V-30 | 2026-09-17 |
+| G producer-minted ids | #10 | #17 | EKG-SPEC-144 to 146; 61, 86, §9.4, V-26 amended | — | pending |
 | B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | — | — | — | pending |
 | Builder `build-artifact.ts` | #3 | — | — | — | pending |
 | Follow-ups | #4 | — | — | — | pending |
