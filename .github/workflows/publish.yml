@@ -1,0 +1,56 @@
+name: Publish
+
+# On a `v*` tag: verify, check that the tag names the version in package.json, then publish to
+# the registry named by `publishConfig.registry` (GitHub Packages). Publishing is an owner
+# action (issue #2); this workflow is how it runs once the owner has decided the namespace.
+#
+# Known blocker, 2026-09-17 (issue #2): GitHub Packages scopes an npm package to the GitHub
+# account its scope names. `@ecollective` names the GitHub user `ecollective`, which is not this
+# organisation (`ecollective-org`). Until the package is renamed to `@ecollective-org/…`, or the
+# owner chooses another registry, the publish step below fails with a permission error, and that
+# failure is the expected outcome of pushing a tag. Everything before it still runs, so a tag
+# always proves the tagged commit verifies.
+#
+# The package is private, like the repository. A consumer installs it with a token that has
+# `read:packages`; see issue #2 for what each consumer's build needs.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: verify and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@ecollective'
+
+      - name: The tag must equal the package version (consumers pin by exact version, EKG-SPEC-82)
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "${expected}" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match package.json version (${expected})" >&2
+            exit 1
+          fi
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Typecheck, test, build
+        run: npm run verify
+
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
