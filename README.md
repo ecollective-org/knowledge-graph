@@ -11,8 +11,8 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.2 draft specification, landing change by change; package code at 0.2.0,
-> unreleased.** The specification is filed and citable. `schema.ts` and `validate.ts` exist with
+> **Status: v0.2 draft specification; package code at 0.2.0, tagged, not published.** The
+> specification is filed and citable. `schema.ts` and `validate.ts` exist with
 > tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
 > Publishing is blocked on the package namespace (#2); until then a consumer pins a packed tarball
 > (`npm pack`) by content, which is conformant. Nothing here is frozen.

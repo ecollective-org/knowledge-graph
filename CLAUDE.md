@@ -19,8 +19,8 @@ importer and contributor), and InstructOS (mapper).
 assessment, or credential. All of that is in `ecollective-org/www.opendegree.org`. See
 `docs/decisions/0001-dedicated-framework-repo.md` for why.
 
-Status: **v0.2 draft specification, landing change by change (`docs/decisions/0002-…`); package
-code at 0.2.0, unreleased.** `schema.ts`, `validate.ts` and `build-artifact.ts` exist with tests;
+Status: **v0.2 draft specification (`docs/decisions/0002-…`); package code at 0.2.0, tagged, not
+published.** `schema.ts`, `validate.ts` and `build-artifact.ts` exist with tests;
 the builder reproduces Appendix B byte for byte. Publishing is an owner action and is blocked on
 the package namespace (#2): the `@ecollective` scope is not this organisation's on GitHub Packages.
 

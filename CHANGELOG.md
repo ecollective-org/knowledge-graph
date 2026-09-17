@@ -3,12 +3,13 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.2.0 — unreleased
+## 0.2.0 — 2026-09-17
 
-Implements `SPEC.md` v0.2 draft as it lands, one change per pull request
-(`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`). Not yet published; publishing
-is blocked on the package namespace (#2). A 0.1 artifact validates unchanged: every field added
-is optional, and nothing here changes the meaning of an existing field.
+Implements `SPEC.md` v0.2 draft, one change per pull request
+(`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`). Tagged `v0.2.0`; not published,
+because publishing is blocked on the package namespace (#2), so consumers keep vendoring the
+packed tarball. A 0.1 artifact validates unchanged: every field added is optional, and nothing
+here changes the meaning of an existing field.
 
 ### Added
 
@@ -60,6 +61,12 @@ is optional, and nothing here changes the meaning of an existing field.
   Bundle outcome and resource proposals carry the same fields. DIY Degree's obligation
   EKG-SPEC-156. EKG-OQ-10 records the enum growth deferred to the next major (Change J).
 
+- SPEC follow-ups (#4): EKG-SPEC-157 adopts `changelogEntry`'s layout for `changelog.json`;
+  EKG-SPEC-158 requires a durable copy of every build snapshot (EKG-SPEC-54 kept, decided with
+  www.opendegree.org#5); EKG-SPEC-24 amended to the conformant pattern that resolves EKG-OQ-3 (a
+  backfill in the content repository, a build that refuses a resource without an id); §12.5 notes
+  the Astro zod-3 adapter for publishers; EKG-OQ-2 and EKG-OQ-9 flagged as the owner's, EKG-OQ-4
+  to -6 annotated as still open.
 - `build-artifact`: `buildArtifact(entries, { buildId, generatedAt, previous?, … })`, pure and
   runtime-agnostic, ported from Open Degree's `src/lib/ekg.ts`: the manifest, per-domain files
   with cross-domain assessments, credentials and courses (EKG-SPEC-45, EKG-SPEC-136), edges,

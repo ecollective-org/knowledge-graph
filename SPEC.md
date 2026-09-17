@@ -508,10 +508,13 @@ Open Degree's resources are inline objects on an outcome or a course today, with
 They need identity anyway: two outcomes routinely point at the same Khan Academy page, and
 effectiveness evidence (§10) is per resource, not per resource-mention.
 
-**EKG-SPEC-24** A resource's identity is its `ekgId`. When source content carries no `ekgId` on a
-resource, the artifact builder MUST mint one and MUST write it back to the source content in the
-same build's commit, so that the identifier is stable from the next build onward. A builder that
-cannot write back MUST fail rather than mint a fresh identifier on every build.
+**EKG-SPEC-24** A resource's identity is its `ekgId`, minted once in the content repository
+before the build (in Open Degree, a backfill committed by a person or a bot: `npm run
+backfill:ekg`) and never by the build. A build MUST refuse a resource without an `ekgId` rather
+than mint one, so that the identifier is stable from the resource's first build onward. *Amended
+in 0.2.0, resolving EKG-OQ-3: the 0.1 text had the builder mint and write back in the same
+commit; a build that mints is a build that can mint twice, and the conformant pattern is the one
+Open Degree adopted and the package's `buildArtifact` enforces.*
 
 **EKG-SPEC-25** Two resource mentions with the same normalized `url` — scheme and host lowercased,
 default port removed, tracking query parameters (`utm_*`, `gclid`, `fbclid`, `ref`) removed,
@@ -924,6 +927,19 @@ content in real time reads it to hear about upstream changes faster than a daily
 **EKG-SPEC-121** A consumer MAY register a webhook with the commons service to be called on
 publish with each new feed entry. Polling `feed.json` every five minutes is conformant without
 one.
+
+**EKG-SPEC-157** `changelog.json` is a JSON array of builds, newest first, each
+`{ buildId, generatedAt, schemaVersion, domains, merges, deprecatedFields }`: `domains` maps a
+domain slug to `{ added, changed, deprecated, merged }` counts of nodes, `merges` lists
+`{ deprecated, survivor }` pairs of `ekgId`s, and `deprecatedFields` names every field inside a
+deprecation window (EKG-SPEC-80). EKG-SPEC-53 fixes the fields; this fixes their shape, which the
+package's `changelogEntry` has carried since 0.1.0 and the live artifact publishes.
+
+**EKG-SPEC-158** A publisher MUST copy each build's snapshot (`builds/<buildId>/…`) to durable
+storage at publish time, so that the last 100 builds of EKG-SPEC-54 survive a stateless rebuild; a
+rebuild MUST NOT be the only copy. The store is the publisher's to choose. A publisher that does
+not yet meet this says so against EKG-SPEC-84 in its §13 conformance statement rather than claim
+it.
 
 ### 8.7 Import behaviour
 
@@ -1340,6 +1356,17 @@ these places. Each is a change Open Degree must make; none changes the meaning o
 8. Emit the artifact (§8) from the site build, with checksums, changelog, and per-build snapshots.
 9. Move the cycle check to whole-graph scope (EKG-SPEC-75), keeping the per-domain layering for display.
 
+### 12.5 Notes for publishers
+
+This subsection is context, not requirements.
+
+**Astro and zod.** Astro 5.x pins zod 3 for `astro:content` (its typegen and `reference()` are
+zod-3 schemas), while this package is on zod 4, and the two cannot be composed in one schema. A
+publisher on Astro therefore keeps a typed adapter in its `content.config.ts` that mirrors the
+source schemas of §3 field for field, and runs this package's `validateGraph` and
+`validateDomainFile` (or `buildArtifact`, which runs both) at build time, so the package stays the
+authority and any disagreement fails the build. Revisit when Astro adopts zod 4.
+
 ## 13. Consumer obligations
 
 Each product's checklist. A product that cannot tick every MUST is not conformant, and should say so
@@ -1426,14 +1453,14 @@ as training data, and no term of this specification may be read to grant any rig
 | # | Question | Blocks |
 | --- | --- | --- |
 | **EKG-OQ-1** | **Resolved 2026-09-05: yes.** Open Degree adds and backfills `ekgId` (with `slug`, `previousSlugs[]` and `provenance`) through this package and emits the artifact from its build, per §12.4. The slug-plus-alias registry alternative is rejected. (DIY Degree's OQ-4.) | Nothing now; the conformance work is tracked in `www.opendegree.org`. |
-| **EKG-OQ-2** | Who are Open Degree's maintainers, and what is their SLA on an inbound bot pull request? (DIY Degree's OQ-3.) | The contribution protocol's throughput, and any consumer staffing plan built on it. |
-| **EKG-OQ-3** | Where does the resource `ekgId` write-back land (EKG-SPEC-24) — a build-time commit from Open Degree's own CI, or a manual pass? A build that mints without persisting is not acceptable. | The artifact builder. |
-| **EKG-OQ-4** | Should `resource` become a first-class collection in Open Degree rather than an inline object? It has identity, provenance, and a lifecycle already; keeping it inline is the reason EKG-SPEC-24 is awkward. | Deferred to v0.2; the artifact shape (§8.3) already treats resources as first-class, so this is a source-layout question, not a contract question. |
-| **EKG-OQ-5** | Does `Alignment` need its own `ekgId`? Today it is a value object. If alignments are ever to be proposed, reviewed, and superseded independently, they need identity. | v0.2. |
-| **EKG-OQ-6** | Is a second edge type needed in v0.1 — `related`, `broader`, or `part-of`? The graph is currently prerequisite-only, which is a deliberate simplification. | v0.2; adding an edge type is additive (§12.1). |
+| **EKG-OQ-2** | Who are Open Degree's maintainers, and what is their SLA on an inbound bot pull request? (DIY Degree's OQ-3.) **Open at 0.2.0; the owner's to answer** (www.opendegree.org#4). Meanwhile the commons' fast lane keeps learners unblocked without upstream review (EKG-SPEC-126). | The contribution protocol's throughput, and any consumer staffing plan built on it. |
+| **EKG-OQ-3** | **Resolved 2026-09-17: a manual backfill, enforced by the build.** The resource `ekgId` is minted in the content repository (`npm run backfill:ekg` in Open Degree, committed by a person or a bot) and the build refuses a resource without one; EKG-SPEC-24 is amended to say so. | Nothing now. |
+| **EKG-OQ-4** | Should `resource` become a first-class collection in Open Degree rather than an inline object? It has identity, provenance, and a lifecycle already. **Still open at 0.2.0.** Source resources stay inline; the commons holds resources as records of its own service (§9.7, its requirements OD-RES), which takes the pressure off the source layout. | A source-layout question, not a contract question: the artifact (§8.3) already treats resources as first-class. |
+| **EKG-OQ-5** | Does `Alignment` need its own `ekgId`? Today it is a value object. **Still open at 0.2.0.** Bundles propose alignments per outcome (§9.7), which needs no alignment identity. | Independent proposal, review and supersession of alignments, if ever wanted. |
+| **EKG-OQ-6** | Is a second edge type needed — `related`, `broader`, or `part-of`? **Still open at 0.2.0.** Bundle edges are `prerequisite` only; adding an edge type is additive (§12.1). | Nothing yet. |
 | **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. Is that sufficient, or does the owner want the positioning revisited? (DIY Degree's OQ-14.) | InstructOS integration work. |
 | **EKG-OQ-8** | Is k = 50 the right threshold? It is conservative, and it means a new node publishes no evidence for a long time. Lowering it is a privacy decision, not an engineering one. | Nothing yet; revisit with real volume. |
-| **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? Today: the owner. When a governance body exists, this changes. | `GOVERNANCE.md` §Roles. |
+| **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? Today: the owner. When a governance body exists, this changes. **Open at 0.2.0; the owner's to answer.** | `GOVERNANCE.md` §Roles. |
 | **EKG-OQ-10** | Enum growth deferred to the next major (the v0.2 proposal's Change J): `audio`, `course` and `paper` as resource `kind` values, and `teacher` as a provenance `source`. Adding an enum value breaks a 0.1 validator (EKG-SPEC-78 covers unknown fields, not unknown values), so this waits for EKG-SPEC-79's sign-off and window. Until then `subKind` carries the refinement and `source: diydegree` with a product-side recommender record carries a teacher's authorship. | The next major release. |
 
 ---
@@ -1442,7 +1469,9 @@ as training data, and no term of this specification may be read to grant any rig
 
 A sketch of what `@ecollective/knowledge-graph` would export. Zod, so that Open Degree's
 `content.config.ts` can import it directly and the site build stays the schema's continuous test.
-Illustrative, not published; the package does not exist yet.
+This sketch is v0.1's and is retained for history, annotated where 0.2.0 added fields. From 0.2.0
+the package itself (`src/`) is the reference, and every export it adds is described in the section
+it implements.
 
 ```ts
 import { z } from 'zod';
