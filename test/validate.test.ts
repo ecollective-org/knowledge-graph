@@ -189,6 +189,17 @@ describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
     expect(result.file?.nodes).toHaveLength(8);
   });
 
+  it('accepts a resource carrying an audience block, with no warnings (EKG-SPEC-110)', () => {
+    const file = clone(geometry);
+    (file.resources[0] as { audience?: unknown }).audience = { rating: 'all', basis: { human: { count: 1, lastAt: '2026-09-16T15:20:00Z' } } };
+    const result = validateDomainFile(file);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.file?.resources[0]?.audience?.rating).toBe('all');
+    (file.resources[0] as { audience?: unknown }).audience = { rating: 'mature' };
+    expect(validateDomainFile(file).errors[0]?.rule).toBe('V-01');
+  });
+
   it('V-23 rejects a resourceIds entry that is not in the file', () => {
     const file = clone(geometry);
     (file.nodes[0] as { resourceIds: string[] }).resourceIds.push('ekg:resource:01JBXMSSNGRSRC000000000000');

@@ -3,6 +3,25 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## 0.2.0 — unreleased
+
+Implements `SPEC.md` v0.2 draft as it lands, one change per pull request
+(`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`). Not yet published; publishing
+is blocked on the package namespace (#2). A 0.1 artifact validates unchanged: every field added
+is optional, and nothing here changes the meaning of an existing field.
+
+### Added
+
+- `schema`: `audience` on `resource` and `artifact.resource`, with `AUDIENCE_RATINGS`,
+  `AUDIENCE_DESCRIPTORS` and the `Audience` types (SPEC §7.4; EKG-SPEC-110 to EKG-SPEC-113 and
+  the DIY Degree obligation EKG-SPEC-114; #7). Optional with no default: an absent block means
+  `unrated`.
+
+### Changed
+
+- `SCHEMA_VERSION` is `0.2.0`; the Appendix B fixture and the specification's artifact examples
+  say so.
+
 ## 0.1.0 — 2026-09-05
 
 First package release, implementing `SPEC.md` v0.1 draft. Not yet published to GitHub Packages.

@@ -196,9 +196,9 @@ permanent from then on.
 
 | Change | Issue | Pull request | Requirements | Rules | Merged |
 | --- | --- | --- | --- | --- | --- |
-| CI and publish workflows | #2 | #12 | — | — | pending |
-| This record | — | — | — | — | pending |
-| A `audience` | #7 | — | — | — | pending |
+| CI and publish workflows | #2 | #12 | — | — | 2026-09-17 |
+| This record | — | #13 | — | — | 2026-09-17 |
+| A `audience` | #7 | #14 | EKG-SPEC-110 to 114 | — | pending |
 | F, H, I reference family, bundles, feed | #9 | — | — | — | pending |
 | D, E path definitions, registry | #8 | — | — | — | pending |
 | G producer-minted ids | #10 | — | — | — | pending |

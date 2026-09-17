@@ -3,8 +3,8 @@
  *
  * Read `SPEC.md` first. This package is the code side of that contract: Zod schemas for
  * every entity and value object (§3), the `ekgId` helpers (§4), the artifact types (§8),
- * the framework registry (§6.2), resource URL identity (§4.4), integrity helpers (§8.5),
- * and the whole-graph validator (§11).
+ * the framework registry (§6.2), resource URL identity (§4.4), audience ratings (§7.4),
+ * integrity helpers (§8.5), and the whole-graph validator (§11).
  */
 
 export {
@@ -23,6 +23,8 @@ export type { EkgId, EkgType } from './ekg-id.js';
 
 export {
   ASSESSMENT_KINDS,
+  AUDIENCE_DESCRIPTORS,
+  AUDIENCE_RATINGS,
   COSTS,
   EMBED_POLICIES,
   LEVELS,
@@ -37,6 +39,7 @@ export {
   artifact,
   artifactResource,
   assessment,
+  audience,
   commons,
   course,
   credential,
@@ -63,6 +66,9 @@ export type {
   ArtifactResource,
   Assessment,
   AssessmentKind,
+  Audience,
+  AudienceDescriptor,
+  AudienceRating,
   Cost,
   Course,
   Credential,
