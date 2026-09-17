@@ -52,6 +52,13 @@ is optional, and nothing here changes the meaning of an existing field.
   proposal in a bundle carries an optional `ekgId`, which `validateImportBundle` accepts from a
   registered product identity and rejects from anyone else (V-26). EKG-SPEC-61's "no `ekgId`"
   bullet, EKG-SPEC-86 and the §9.4 checklist (item 10) are amended in place.
+- `schema`: `volatility` and `evidenceClass` on `outcome` and `artifact.outcome` (`VOLATILITIES`,
+  `EVIDENCE_CLASSES`; SPEC §3.2, EKG-SPEC-147 to EKG-SPEC-149); `subKind` (`RESOURCE_SUBKINDS`,
+  `SUBKIND_KINDS`, `withSubKindRule`), `publishedAt` (a date or a datetime), `externalIds`
+  (`EXTERNAL_ID_SCHEMES`, `EXTERNAL_ID_KEY_PATTERN`), `evidenceSignals`, `transcript` and
+  `platformId` on every resource (SPEC §3.6, EKG-SPEC-150 to EKG-SPEC-155; #11, closing #5).
+  Bundle outcome and resource proposals carry the same fields. DIY Degree's obligation
+  EKG-SPEC-156. EKG-OQ-10 records the enum growth deferred to the next major (Change J).
 
 ### Changed
 

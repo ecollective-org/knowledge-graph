@@ -152,6 +152,8 @@ The node of the graph. One concept, one node.
 | `alignments` | Alignment[] ? (`[]`) | §6 |
 | `aliases` | `string[]` ? (`[]`) | other names for the concept, so a search from any of them lands here |
 | `resources` | Resource[] ? (`[]`) | §3.6, §7 |
+| `volatility` **+** | `stable` \| `evolving` \| `frontier` ? | how settled the claim is, never how hard; EKG-SPEC-147 |
+| `evidenceClass` **+** | `peer_reviewed` \| `preprint` \| `vendor_docs` \| `single_source` \| `mixed` ? | what the claim rests on |
 | `supersededBy` | ref → Outcome ? | |
 
 **EKG-SPEC-07** `prerequisites` MUST contain immediate prerequisites only. A conformant consumer
@@ -161,6 +163,20 @@ introduce one.
 
 **EKG-SPEC-08** An outcome's `statement` is the concept's single definition. Two outcomes MUST NOT
 state the same concept; the remedy for a duplicate is a merge (§5.4), not a second node.
+
+**EKG-SPEC-147** `volatility` describes how settled an outcome's claim is (`stable`, `evolving`,
+`frontier`), never how hard it is; `level` is unchanged, and a `frontier` value on `level` is
+rejected (V-01). `evidenceClass` says what the claim rests on. Both are optional; absent means
+nobody has said.
+
+**EKG-SPEC-148** A consumer that presents a `frontier` or `evolving` outcome MUST label it as such
+beside the EKG-SPEC-30 label, and SHOULD re-verify a learner's mastery when the outcome's `version`
+changes: a minor bump invites re-verification, a major bump lapses it (the policy is the
+product's).
+
+**EKG-SPEC-149** An overturned claim is a `statement` revision with a major `version` bump
+(EKG-SPEC-83), or a deprecation with the reason in the commit. It is never a `supersededBy`, which
+means a merge or a retirement (EKG-SPEC-05/31).
 
 ### 3.3 Course
 
@@ -277,6 +293,12 @@ resource to a learner.
 | `coverage` **+** | `string[]` ? (`[]`) | the outcome `evidence` statements this resource teaches |
 | `lastVerifiedAt` **+** | ISO 8601 `string` ? | link-check timestamp |
 | `audience` **+** | Audience ? | §7.4; absent means `unrated` (EKG-SPEC-110) |
+| `subKind` **+** | `course` \| `lesson_plan` \| `syllabus` \| `worksheet` \| `paper` \| `preprint` \| `docs` \| `changelog` \| `podcast` \| `talk` \| `repo` ? | refines `kind`, never contradicts it; EKG-SPEC-150 |
+| `publishedAt` **+** | ISO 8601 date or datetime ? | when the material was published |
+| `externalIds` **+** | `{ <scheme>: id }` ? | `doi`, `arxiv`, `openalex`, `isbn`, `youtube`, `vimeo`; EKG-SPEC-153 |
+| `evidenceSignals` **+** | `{ citationCount?, citationSource?, venue?, peerReviewed?, retracted?, retractedAt? }` ? | EKG-SPEC-151/152 |
+| `transcript` **+** | `{ available, source?, retrievableUnderTerms? }` ? | EKG-SPEC-154 |
+| `platformId` **+** | `ekg:platform:<ULID>` ? | the commons platform it comes from; EKG-SPEC-155 |
 | `provenance` **+** | Provenance ? | required in the artifact; §7.3 |
 
 **EKG-SPEC-11** `embedPolicy` describes what a consumer is permitted to do, not what is technically
@@ -286,6 +308,33 @@ overlay. `link-only` means it must be opened out.
 
 **EKG-SPEC-12** `coverage` entries MUST be exact strings from the `evidence` array of an outcome the
 resource is attached to. Free text matching no evidence statement is a validation error (§11).
+
+**EKG-SPEC-150** `subKind` refines `kind` and MUST NOT contradict it (V-01): `paper`, `preprint`,
+`docs`, `changelog`, `syllabus`, `lesson_plan` and `worksheet` sit under `reading`; `talk` under
+`video`; `repo` under `tool`; `course` under `interactive` or `reading` as the material dictates;
+`podcast` under `reading` until an `audio` kind exists (EKG-OQ-10). The `kind` enum itself is
+unchanged, because a 0.1 validator rejects an unknown enum value (EKG-SPEC-78).
+
+**EKG-SPEC-151** A resource whose `evidenceSignals.retracted` is true MUST NOT be served as a
+primary by any consumer, and a publisher SHOULD move it to `deprecated` on its next build.
+
+**EKG-SPEC-152** Citation counts are advisory ranking input, never a serving gate: new work has
+none.
+
+**EKG-SPEC-153** `externalIds` maps a scheme to the resource's identifier in it. The registered
+schemes are `doi`, `arxiv`, `openalex`, `isbn`, `youtube` (the video id) and `vimeo`; a scheme is
+added by specification change, and a consumer MUST ignore a scheme it does not know. It is stated
+once by the curator or harvester that knew it, so no consumer re-derives a provider's id from the
+`url`.
+
+**EKG-SPEC-154** `transcript` records whether a caption or transcript text exists for the resource
+and whether it may be retrieved under the provider's terms, so that judgement travels with the
+resource. When present, a consumer MUST NOT retrieve the text if `retrievableUnderTerms` is false;
+when absent, the consumer makes its own judgement under the provider's terms, as today.
+
+**EKG-SPEC-155** `platformId` references the commons `platform` entity (§3.9) the resource comes
+from. The platform's own `embedPolicy` and `ageRequirement` are facts about the platform; they
+never override the resource's own `embedPolicy` or `audience`.
 
 ### 3.7 Alignment (value object)
 
@@ -1318,6 +1367,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-99** Renders attribution for Open Degree-derived definitions and for every resource (FR-EKG-13).
 - [ ] **EKG-SPEC-114** Enforces the audience ceiling of EKG-SPEC-111 for every learner under 18 from the artifact's `audience` block, holds any stricter rating of its own as an overlay, and never serves an `unrated` resource as a minor's primary (decision record 0008 there).
 - [ ] **EKG-SPEC-143** Follows a path definition by its `segments`, deduplicates a cross-domain course by `ekgId` (EKG-SPEC-136), and renders a program template with the phrase of EKG-SPEC-139 and never a claim of equivalence, credit or a degree (decision record 0005 there).
+- [ ] **EKG-SPEC-156** Labels every `frontier` and `evolving` outcome beside the EKG-SPEC-30 label, never serves a retracted resource as a primary, and treats `volatility`, `evidenceClass`, `subKind`, `publishedAt`, `externalIds` and `platformId` as canonical fields overwritten by import (EKG-SPEC-57; decision record 0006 there).
 
 ### 13.3 InstructOS — mapper
 
@@ -1383,6 +1433,7 @@ as training data, and no term of this specification may be read to grant any rig
 | **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. Is that sufficient, or does the owner want the positioning revisited? (DIY Degree's OQ-14.) | InstructOS integration work. |
 | **EKG-OQ-8** | Is k = 50 the right threshold? It is conservative, and it means a new node publishes no evidence for a long time. Lowering it is a privacy decision, not an engineering one. | Nothing yet; revisit with real volume. |
 | **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? Today: the owner. When a governance body exists, this changes. | `GOVERNANCE.md` §Roles. |
+| **EKG-OQ-10** | Enum growth deferred to the next major (the v0.2 proposal's Change J): `audio`, `course` and `paper` as resource `kind` values, and `teacher` as a provenance `source`. Adding an enum value breaks a 0.1 validator (EKG-SPEC-78 covers unknown fields, not unknown values), so this waits for EKG-SPEC-79's sign-off and window. Until then `subKind` carries the refinement and `source: diydegree` with a product-side recommender record carries a teacher's authorship. | The next major release. |
 
 ---
 
@@ -1476,6 +1527,8 @@ export const resource = z.object({
   coverage: z.array(z.string()).default([]),
   lastVerifiedAt: z.string().datetime().optional(),
   audience: audience.optional(),                 // §7.4 (0.2.0)
+  subKind: z.enum(RESOURCE_SUBKINDS).optional(), // §3.6 (0.2.0), with publishedAt, externalIds,
+                                                 // evidenceSignals, transcript, platformId
   provenance: provenance.optional(),
 });
 

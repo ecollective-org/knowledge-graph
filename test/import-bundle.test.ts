@@ -210,6 +210,19 @@ describe('import bundles (SPEC §9.7)', () => {
     expect(validateImportBundle(b).items[0]?.errors[0]?.rule).toBe('V-09');
   });
 
+  it('carries volatility and evidenceClass on outcome proposals and the subKind rule on resource proposals (Changes B, C)', () => {
+    const b = bundle();
+    Object.assign(b.proposals.outcomes[0]!, { volatility: 'frontier', evidenceClass: 'preprint' });
+    Object.assign(b.proposals.resources[0]!, { subKind: 'talk', externalIds: { youtube: 'dQw4w9WgXcQ' } });
+    const ok = validateImportBundle(b);
+    expect(ok.errors).toEqual([]);
+    expect(ok.bundle?.proposals.outcomes[0]?.volatility).toBe('frontier');
+    Object.assign(b.proposals.resources[0]!, { subKind: 'paper' });
+    const bad = validateImportBundle(b);
+    expect(bad.items.find((i) => i.ref === 'tmp:khan-triangle-proofs')).toMatchObject({ decision: 'rejected' });
+    expect(rulesOf(bad.items, 'tmp:khan-triangle-proofs')).toEqual(['V-01']);
+  });
+
   it('names the report shape the commons answers with (EKG-SPEC-127)', () => {
     const result = validateImportBundle(bundle());
     const report = importReport.safeParse({ bundleVersion: IMPORT_BUNDLE_VERSION, producer: bundle().producer, receivedAt: at, items: result.items });

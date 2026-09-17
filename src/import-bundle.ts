@@ -9,7 +9,20 @@ import {
   programFields,
   standardFields,
 } from './reference.js';
-import { COURSE_KINDS, LEVELS, SEGMENT_KINDS, alignment, provenance, resourceFields, semver, slug, sourceCitation } from './schema.js';
+import {
+  COURSE_KINDS,
+  EVIDENCE_CLASSES,
+  LEVELS,
+  SEGMENT_KINDS,
+  VOLATILITIES,
+  alignment,
+  provenance,
+  resourceFields,
+  semver,
+  slug,
+  sourceCitation,
+  withSubKindRule,
+} from './schema.js';
 import { type ValidationError, pathToString, ruleOf } from './validate.js';
 
 /*
@@ -130,6 +143,8 @@ export const proposals = {
     prerequisites: z.array(bundleRef).default([]),
     aliases: z.array(z.string()).default([]),
     alignments: z.array(alignment).default([]),
+    volatility: z.enum(VOLATILITIES).optional(),
+    evidenceClass: z.enum(EVIDENCE_CLASSES).optional(),
     /** Required by V-27; optional here so its absence is reported under that rule, not V-01. */
     dedupe: dedupeEvidence.optional(),
     /** The id a registered product minted for a node its learners already reference (EKG-SPEC-144); V-26 rejects it from anyone else. */
@@ -156,11 +171,13 @@ export const proposals = {
     alignments: z.array(alignment).default([]),
     sources: z.array(sourceCitation).default([]),
   }),
-  resources: proposed({
-    ...resourceFields,
-    outcomes: z.array(bundleRef).min(1, 'A resource proposal names at least one outcome (V-01)'),
-    qualityProposal: qualityProposal.optional(),
-  }),
+  resources: withSubKindRule(
+    proposed({
+      ...resourceFields,
+      outcomes: z.array(bundleRef).min(1, 'A resource proposal names at least one outcome (V-01)'),
+      qualityProposal: qualityProposal.optional(),
+    }),
+  ),
   frameworks: proposed({ id: slug, ...frameworkFields, retrievedAt }),
   standards: proposed({ ...standardFields, retrievedAt }),
   institutions: proposed({ ...institutionFields, retrievedAt }),
