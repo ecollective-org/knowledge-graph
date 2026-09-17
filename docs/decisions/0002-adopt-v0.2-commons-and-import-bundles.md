@@ -198,8 +198,8 @@ permanent from then on.
 | --- | --- | --- | --- | --- | --- |
 | CI and publish workflows | #2 | #12 | — | — | 2026-09-17 |
 | This record | — | #13 | — | — | 2026-09-17 |
-| A `audience` | #7 | #14 | EKG-SPEC-110 to 114 | — | pending |
-| F, H, I reference family, bundles, feed | #9 | — | — | — | pending |
+| A `audience` | #7 | #14 | EKG-SPEC-110 to 114 | — | 2026-09-17 |
+| F, H, I reference family, bundles, feed | #9 | #15 | EKG-SPEC-115 to 134; 15, 62 amended | V-25 to V-28 | pending |
 | D, E path definitions, registry | #8 | — | — | — | pending |
 | G producer-minted ids | #10 | — | — | — | pending |
 | B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | — | — | — | pending |

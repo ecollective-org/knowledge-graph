@@ -1,8 +1,9 @@
 import type { z } from 'zod';
 
 import { domainFile as domainFileSchema, type DomainFile } from './artifact.js';
-import { type EkgType, isEkgId, parseEkgId } from './ekg-id.js';
+import { type EkgType, isEkgId, isReferenceType, parseEkgId } from './ekg-id.js';
 import { frameworkByName, frameworkByNameLoosely } from './frameworks.js';
+import { type ReferenceEntity, reference } from './reference.js';
 import {
   artifact,
   entity as sourceEntity,
@@ -19,6 +20,11 @@ import { normalizeResourceUrl } from './url.js';
  * V-10/V-11 ekgId uniqueness and type segment, V-12/V-13/V-14 slug and slug history,
  * V-15/V-16 supersession chains, V-17 coverage strings, V-18 resource URL identity,
  * V-21 no stub in a credential, V-22 framework names, and V-23 for a domain file.
+ *
+ * In source mode the same identity, slug and supersession rules run over the commons' reference
+ * entities (SPEC §3.9) passed alongside or instead of graph entities, so the commons validates
+ * its reference set with the same function; in artifact mode a reference entity is a V-07
+ * failure, because a domain file never carries one (EKG-SPEC-115).
  *
  * Every error names the entity by slug and ekgId and states the rule (EKG-SPEC-76).
  */
@@ -50,16 +56,16 @@ export interface ValidationResult {
   warnings: ValidationError[];
 }
 
-type AnyEntity = Entity | ArtifactEntity;
+type AnyEntity = Entity | ArtifactEntity | ReferenceEntity;
 
 const RULE_TAG = /\((V-\d\d)\)\s*$/;
 const MAX_SUPERSESSION_DEPTH = 8;
 
-function ruleOf(message: string, fallback = 'V-01'): string {
+export function ruleOf(message: string, fallback = 'V-01'): string {
   return RULE_TAG.exec(message)?.[1] ?? fallback;
 }
 
-function describe(e: { slug?: unknown; ekgId?: unknown }): { slug: string; ekgId?: string } {
+export function describe(e: { slug?: unknown; ekgId?: unknown }): { slug: string; ekgId?: string } {
   const out: { slug: string; ekgId?: string } = {
     slug: typeof e.slug === 'string' ? e.slug : '(unknown)',
   };
@@ -67,8 +73,13 @@ function describe(e: { slug?: unknown; ekgId?: unknown }): { slug: string; ekgId
   return out;
 }
 
-function pathToString(path: readonly PropertyKey[]): string {
-  return path.map((p) => (typeof p === 'number' ? `[${p}]` : String(p))).join('.');
+export function pathToString(path: readonly PropertyKey[]): string {
+  let out = '';
+  for (const p of path) {
+    if (typeof p === 'number') out += `[${p}]`;
+    else out += out ? `.${String(p)}` : String(p);
+  }
+  return out;
 }
 
 /** Parse every input against its schema (V-01, V-04, V-06, V-07, V-09, V-12, V-19, V-20). */
@@ -76,10 +87,12 @@ function parseEntities(
   inputs: readonly unknown[],
   mode: RefMode,
 ): { entities: AnyEntity[]; errors: ValidationError[] } {
-  const schema = mode === 'artifact' ? artifact.entity : sourceEntity;
   const entities: AnyEntity[] = [];
   const errors: ValidationError[] = [];
   inputs.forEach((input, index) => {
+    const type = (input as { type?: unknown } | null)?.type;
+    const schema =
+      mode === 'artifact' ? artifact.entity : isReferenceType(type) ? reference.entity : sourceEntity;
     const result = schema.safeParse(input);
     if (result.success) {
       entities.push(result.data);
@@ -164,6 +177,22 @@ function refFields(e: AnyEntity): RefField[] {
       push('assessments', 'assessment', e.assessments);
       push('supersededBy', 'credential', e.supersededBy);
       break;
+    case 'program':
+      push('institution', 'institution', e.institution);
+      push('requiredOfferings', 'offering', e.requiredOfferings);
+      push('supersededBy', 'program', e.supersededBy);
+      break;
+    case 'offering':
+      push('institution', 'institution', e.institution);
+      push('outcomeMappings', 'outcome', e.outcomeMappings.map((m) => m.outcome));
+      push('supersededBy', 'offering', e.supersededBy);
+      break;
+    case 'framework':
+    case 'standard':
+    case 'institution':
+    case 'platform':
+      push('supersededBy', e.type, e.supersededBy);
+      break;
   }
   return out;
 }
@@ -243,7 +272,8 @@ export function validateGraph(inputs: readonly unknown[], options: ValidateOptio
     for (const { field, type, refs } of refFields(e)) {
       refs.forEach((ref, i) => {
         if (!index.resolve(ref, type)) {
-          const path = refs.length === 1 && field !== 'prerequisites' && field !== 'outcomes' && field !== 'assessments' ? field : `${field}[${i}]`;
+          const listField = field === 'prerequisites' || field === 'outcomes' || field === 'assessments' || field === 'requiredOfferings' || field === 'outcomeMappings';
+          const path = refs.length === 1 && !listField ? field : `${field}[${i}]`;
           fail(e, 'V-02', `${field} references ${type} "${ref}", which does not exist`, path);
         }
       });
@@ -371,7 +401,7 @@ export function validateGraph(inputs: readonly unknown[], options: ValidateOptio
     if (e.type !== 'credential') continue;
     e.outcomes.forEach((ref, i) => {
       const target = index.resolve(ref, 'outcome');
-      if (target && target.status === 'stub') fail(e, 'V-21', `credential bundles stub outcome "${target.slug}" (${target.ekgId})`, `outcomes[${i}]`);
+      if (target?.type === 'outcome' && target.status === 'stub') fail(e, 'V-21', `credential bundles stub outcome "${target.slug}" (${target.ekgId})`, `outcomes[${i}]`);
     });
   }
 

@@ -36,6 +36,7 @@ One named maintainer per consuming product. Each maintainer:
 | Open Degree | Publisher and moderator | — (it is the publisher) |
 | DIY Degree | Importer and contributor | `diy-degree-curation` |
 | InstructOS | Mapper | `instructos-mapping` |
+| Open Degree commons (`app.opendegree.org`) | Importer of bundles, publisher of reference data | `opendegree-commons` |
 
 ### Open Degree moderators
 
