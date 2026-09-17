@@ -203,6 +203,6 @@ permanent from then on.
 | D, E path definitions, registry | #8 | #16 | EKG-SPEC-135 to 143; 45 prose, V-22 amended | V-29, V-30 | 2026-09-17 |
 | G producer-minted ids | #10 | #17 | EKG-SPEC-144 to 146; 61, 86, §9.4, V-26 amended | — | 2026-09-17 |
 | B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | #18 | EKG-SPEC-147 to 156; EKG-OQ-10 | — | 2026-09-17 |
-| Builder `build-artifact.ts` | #3 | #19 | V-23, EKG-SPEC-120 prose, Appendix B amended | — | pending |
-| Follow-ups | #4 | — | — | — | pending |
-| `v0.2.0` tag | — | — | — | — | pending |
+| Builder `build-artifact.ts` | #3 | #19 | V-23, EKG-SPEC-120 prose, Appendix B amended | — | 2026-09-17 |
+| Follow-ups | #4 | #20 | EKG-SPEC-157, 158; 24 amended; EKG-OQ-3 resolved; EKG-OQ-2, 9 flagged | — | 2026-09-17 |
+| `v0.2.0` tag | — | — | — | — | 2026-09-17, on the merge of #20; the publish workflow runs and its publish step fails on the namespace until the owner decides (#2) |
