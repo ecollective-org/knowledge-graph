@@ -125,6 +125,7 @@
                    "ekg:outcome:01JBX2RGDMTNS0000000000000", "ekg:outcome:01JBX3PRVCNGRNCE0000000000"],
       "assessments": ["ekg:assessment:01JBX6TASKRGDMTN0000000000"],
       "estimatedHours": 12, "formats": ["video", "interactive", "practice", "project"],
+      "kind": "curated_path", "segments": [], "alignments": [], "sources": [],
       "resourceIds": ["ekg:resource:01JBXKHANACADEMY0000000000", "ekg:resource:01JBXGEGEBRA00000000000000",
                       "ekg:resource:01JBXNYSSTANDARDSPDF000000", "ekg:resource:01JBXREGENTSPAST0000000000"],
       "status": "draft", "version": "0.1.0", "license": "CC BY-SA 4.0",

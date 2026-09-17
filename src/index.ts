@@ -33,18 +33,21 @@ export {
   AUDIENCE_DESCRIPTORS,
   AUDIENCE_RATINGS,
   COSTS,
+  COURSE_KINDS,
   EMBED_POLICIES,
   LEVELS,
   MODALITIES,
   PROVENANCE_SOURCES,
   RELATIONS,
   RESOURCE_KINDS,
+  SEGMENT_KINDS,
   SEMVER_PATTERN,
   SLUG_PATTERN,
   STATUSES,
   alignment,
   artifact,
   artifactResource,
+  artifactSegment,
   assessment,
   audience,
   commons,
@@ -55,6 +58,7 @@ export {
   outcome,
   provenance,
   resource,
+  segment,
   semver,
   slug,
   sourceCitation,
@@ -72,6 +76,7 @@ export type {
   ArtifactNode,
   ArtifactOutcome,
   ArtifactResource,
+  ArtifactSegment,
   Assessment,
   AssessmentKind,
   Audience,
@@ -79,6 +84,7 @@ export type {
   AudienceRating,
   Cost,
   Course,
+  CourseKind,
   Credential,
   Domain,
   EmbedPolicy,
@@ -91,6 +97,8 @@ export type {
   Relation,
   Resource,
   ResourceKind,
+  Segment,
+  SegmentKind,
   SourceCitation,
   Status,
 } from './schema.js';
@@ -130,7 +138,15 @@ export type {
 export { sha256Hex, verifyChecksums } from './checksums.js';
 export type { ChecksumMismatch } from './checksums.js';
 
-export { FRAMEWORKS, FRAMEWORK_KINDS, frameworkById, frameworkByName, frameworkByNameLoosely } from './frameworks.js';
+export {
+  FRAMEWORKS,
+  FRAMEWORK_KINDS,
+  STATE_FRAMEWORK_ID_PATTERN,
+  frameworkById,
+  frameworkByName,
+  frameworkByNameLoosely,
+  isStateFrameworkId,
+} from './frameworks.js';
 export type { Framework, FrameworkKind } from './frameworks.js';
 
 export { DEGREE_LEVELS, STANDARD_KINDS, outcomeMapping, reference, referenceCommons } from './reference.js';

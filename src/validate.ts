@@ -2,7 +2,7 @@ import type { z } from 'zod';
 
 import { domainFile as domainFileSchema, type DomainFile } from './artifact.js';
 import { type EkgType, isEkgId, isReferenceType, parseEkgId } from './ekg-id.js';
-import { frameworkByName, frameworkByNameLoosely } from './frameworks.js';
+import { type Framework, frameworkById, frameworkByName, frameworkByNameLoosely } from './frameworks.js';
 import { type ReferenceEntity, reference } from './reference.js';
 import {
   artifact,
@@ -19,7 +19,8 @@ import { normalizeResourceUrl } from './url.js';
  * V-02 reference resolution, V-03 prerequisite cycles at whole-graph scope (EKG-SPEC-75),
  * V-10/V-11 ekgId uniqueness and type segment, V-12/V-13/V-14 slug and slug history,
  * V-15/V-16 supersession chains, V-17 coverage strings, V-18 resource URL identity,
- * V-21 no stub in a credential, V-22 framework names, and V-23 for a domain file.
+ * V-21 no stub in a credential, V-22 framework names, V-23 for a domain file, V-29 segments
+ * inside a course's outcomes, and V-30 registry-kind constraints on an outcome's alignments.
  *
  * In source mode the same identity, slug and supersession rules run over the commons' reference
  * entities (SPEC §3.9) passed alongside or instead of graph entities, so the commons validates
@@ -405,14 +406,38 @@ export function validateGraph(inputs: readonly unknown[], options: ValidateOptio
     });
   }
 
-  // V-22 registered framework names match exactly; an unregistered framework is a warning.
+  // V-22 registered framework names match exactly, on outcomes and courses; an unregistered framework is a warning.
+  // V-30 an outcome never aligns to a program_classification framework, and aligns to an exam_outline only as narrower or related.
   for (const e of entities) {
-    if (e.type !== 'outcome') continue;
+    if (e.type !== 'outcome' && e.type !== 'course') continue;
     e.alignments.forEach((a, i) => {
-      if (frameworkByName(a.framework)) return;
-      const loose = frameworkByNameLoosely(a.framework);
-      if (loose) fail(e, 'V-22', `alignment framework "${a.framework}" must be written exactly as "${loose.name}"`, `alignments[${i}].framework`);
-      else warn(e, 'V-22', `alignment framework "${a.framework}" is not in the framework registry`, `alignments[${i}].framework`);
+      const exact = frameworkByName(a.framework);
+      if (!exact) {
+        const loose = frameworkByNameLoosely(a.framework);
+        if (loose) fail(e, 'V-22', `alignment framework "${a.framework}" must be written exactly as "${loose.name}"`, `alignments[${i}].framework`);
+        else warn(e, 'V-22', `alignment framework "${a.framework}" is not in the framework registry`, `alignments[${i}].framework`);
+      }
+      if (e.type !== 'outcome') return;
+      const registered: Framework | undefined = exact ?? (a.frameworkId ? frameworkById(a.frameworkId) : undefined);
+      if (!registered) return;
+      if (registered.kind === 'program_classification') {
+        fail(e, 'V-30', `an outcome never aligns to the program classification "${registered.name}"; a course or a program does (EKG-SPEC-141)`, `alignments[${i}]`);
+      } else if (registered.kind === 'exam_outline' && a.relation !== 'narrower' && a.relation !== 'related') {
+        fail(e, 'V-30', `an outcome's alignment to the exam outline "${registered.name}" carries relation narrower or related, not ${a.relation} (EKG-SPEC-142)`, `alignments[${i}].relation`);
+      }
+    });
+  }
+
+  // V-29 every outcome listed in a course's segments appears in that course's outcomes.
+  for (const e of entities) {
+    if (e.type !== 'course') continue;
+    const listed = new Set(e.outcomes.map((ref) => index.resolve(ref, 'outcome') ?? ref));
+    e.segments.forEach((segment, si) => {
+      segment.outcomes.forEach((ref, oi) => {
+        if (!listed.has(index.resolve(ref, 'outcome') ?? ref)) {
+          fail(e, 'V-29', `segment "${segment.title}" lists outcome "${ref}", which is not in the course's outcomes`, `segments[${si}].outcomes[${oi}]`);
+        }
+      });
     });
   }
 

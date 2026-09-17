@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { type EkgType, anyEkgId, ekgId, isEkgId, parseEkgId } from './ekg-id.js';
-import { frameworkByName, frameworkByNameLoosely } from './frameworks.js';
+import { type Framework, frameworkById, frameworkByName, frameworkByNameLoosely } from './frameworks.js';
 import {
   frameworkFields,
   institutionFields,
@@ -9,7 +9,7 @@ import {
   programFields,
   standardFields,
 } from './reference.js';
-import { LEVELS, alignment, provenance, resourceFields, semver, slug, sourceCitation } from './schema.js';
+import { COURSE_KINDS, LEVELS, SEGMENT_KINDS, alignment, provenance, resourceFields, semver, slug, sourceCitation } from './schema.js';
 import { type ValidationError, pathToString, ruleOf } from './validate.js';
 
 /*
@@ -141,6 +141,18 @@ export const proposals = {
     description: z.string().min(1),
     domain: bundleRef,
     outcomes: z.array(bundleRef).min(1, 'Must list at least one outcome (V-05)'),
+    kind: z.enum(COURSE_KINDS).default('curated_path'),
+    segments: z
+      .array(
+        z.object({
+          title: z.string().min(1),
+          kind: z.enum(SEGMENT_KINDS).default('core'),
+          outcomes: z.array(bundleRef).min(1, 'A segment lists at least one outcome (V-01)'),
+        }),
+      )
+      .default([]),
+    alignments: z.array(alignment).default([]),
+    sources: z.array(sourceCitation).default([]),
   }),
   resources: proposed({
     ...resourceFields,
@@ -408,6 +420,17 @@ export function validateImportBundle(input: unknown): ImportBundleValidation {
     if (slot.collection === 'offerings') {
       (slot.item as Parsed<'offerings'>).outcomeMappings.forEach((m, i) => checkRef(slot, 'outcome', m.outcome, `outcomeMappings[${i}].outcome`));
     }
+    if (slot.collection === 'courses') {
+      const course = slot.item as Parsed<'courses'>;
+      const listed = new Set(course.outcomes);
+      course.segments.forEach((segment, si) => {
+        segment.outcomes.forEach((ref, oi) => {
+          checkRef(slot, 'outcomes', ref, `segments[${si}].outcomes[${oi}]`);
+          // V-29 every segment outcome is in the course's outcomes.
+          if (!listed.has(ref)) fail(slot, 'V-29', `segment "${segment.title}" lists outcome ${ref}, which is not in the course's outcomes`, `segments[${si}].outcomes[${oi}]`);
+        });
+      });
+    }
   }
 
   // 3. V-25: a proposed outcome's statement is never a proposed standard's statement.
@@ -428,12 +451,24 @@ export function validateImportBundle(input: unknown): ImportBundleValidation {
       else slot.of = outcome.dedupe.of;
     }
 
-    // V-22 on proposed alignments, as validateGraph applies it.
-    outcome.alignments.forEach((a, i) => {
-      if (frameworkByName(a.framework)) return;
-      const loose = frameworkByNameLoosely(a.framework);
-      if (loose) fail(slot, 'V-22', `alignment framework "${a.framework}" must be written exactly as "${loose.name}"`, `alignments[${i}].framework`);
-      else warnings.push({ rule: 'V-22', severity: 'warning', slug: slot.ref, message: `alignment framework "${a.framework}" is not in the framework registry`, path: `alignments[${i}].framework` });
+  }
+
+  // V-22 on proposed alignments (outcomes and courses) and V-30 on outcomes', as validateGraph applies them.
+  for (const slot of slots) {
+    if (slot.collection !== 'outcomes' && slot.collection !== 'courses') continue;
+    const item = slot.item as Parsed<'outcomes'> | Parsed<'courses'>;
+    item.alignments.forEach((a, i) => {
+      const exact = frameworkByName(a.framework);
+      if (!exact) {
+        const loose = frameworkByNameLoosely(a.framework);
+        if (loose) fail(slot, 'V-22', `alignment framework "${a.framework}" must be written exactly as "${loose.name}"`, `alignments[${i}].framework`);
+        else warnings.push({ rule: 'V-22', severity: 'warning', slug: slot.ref, message: `alignment framework "${a.framework}" is not in the framework registry`, path: `alignments[${i}].framework` });
+      }
+      if (slot.collection !== 'outcomes') return;
+      const registered: Framework | undefined = exact ?? (a.frameworkId ? frameworkById(a.frameworkId) : undefined);
+      if (!registered) return;
+      if (registered.kind === 'program_classification') fail(slot, 'V-30', `an outcome never aligns to the program classification "${registered.name}" (EKG-SPEC-141)`, `alignments[${i}]`);
+      else if (registered.kind === 'exam_outline' && a.relation !== 'narrower' && a.relation !== 'related') fail(slot, 'V-30', `an outcome's alignment to the exam outline "${registered.name}" carries relation narrower or related (EKG-SPEC-142)`, `alignments[${i}].relation`);
     });
   }
 

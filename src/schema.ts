@@ -171,6 +171,30 @@ export const sourceCitation = z.object({
 });
 export type SourceCitation = z.infer<typeof sourceCitation>;
 
+/** What a path definition mirrors (SPEC §3.3, EKG-SPEC-137). */
+export const COURSE_KINDS = ['curated_path', 'curriculum', 'exam_outline', 'program_template'] as const;
+/** A segment's place in a path: the core, an elective, or beyond the mirrored definition (EKG-SPEC-135). */
+export const SEGMENT_KINDS = ['core', 'elective', 'beyond'] as const;
+export type CourseKind = (typeof COURSE_KINDS)[number];
+export type SegmentKind = (typeof SEGMENT_KINDS)[number];
+
+const segmentFields = {
+  title: z.string().min(1),
+  kind: z.enum(SEGMENT_KINDS).default('core'),
+};
+/** One ordered, titled part of a course's outcomes, in source (slug or wikilink references). */
+export const segment = z.object({
+  ...segmentFields,
+  outcomes: z.array(wikilink).min(1, 'A segment lists at least one outcome (V-01)'),
+});
+/** The same segment in the artifact, with ekgId references. */
+export const artifactSegment = z.object({
+  ...segmentFields,
+  outcomes: z.array(ekgId('outcome')).min(1, 'A segment lists at least one outcome (V-01)'),
+});
+export type Segment = z.infer<typeof segment>;
+export type ArtifactSegment = z.infer<typeof artifactSegment>;
+
 /**
  * The audience rating on a resource (SPEC §7.4, EKG-SPEC-110 to EKG-SPEC-113): a band, the
  * descriptors that explain it, and the basis it rests on. Optional on a resource, with no default,
@@ -319,6 +343,14 @@ export const course = superseded(
     estimatedHours: z.number().positive().optional(),
     formats: z.array(z.string()).default([]),
     resources: z.array(resource).default([]),
+    /** What the path mirrors (EKG-SPEC-137). */
+    kind: z.enum(COURSE_KINDS).default('curated_path'),
+    /** Ordered parts of `outcomes`; every segment outcome is in `outcomes` (EKG-SPEC-135, V-29). */
+    segments: z.array(segment).default([]),
+    /** The framework the path mirrors, never an outcome's alignment (EKG-SPEC-137). */
+    alignments: z.array(alignment).default([]),
+    /** What the definition was drawn from (EKG-SPEC-139 for a program template). */
+    sources: z.array(sourceCitation).default([]),
     supersededBy: wikilink.optional(),
     ...commons,
   }),
@@ -411,6 +443,12 @@ const artifactCourse = superseded(
     estimatedHours: z.number().positive().optional(),
     formats: z.array(z.string()).default([]),
     resourceIds: z.array(ekgId('resource')).default([]),
+    kind: z.enum(COURSE_KINDS).default('curated_path'),
+    segments: z.array(artifactSegment).default([]),
+    alignments: z.array(alignment).default([]),
+    sources: z.array(sourceCitation).default([]),
+    /** Set when the course's outcomes span domains and it appears in each file (EKG-SPEC-136). */
+    crossDomain: z.boolean().optional(),
     supersededBy: ekgId('course').optional(),
     ...artifactCommons,
   }),
