@@ -3,12 +3,23 @@
  * is added by the same process as any other change to the specification.
  */
 
+/** What a framework is: a standards document, a program classification, an exam outline, a credit recommendation, a credential format (SPEC §6.2, 0.2.0). */
+export const FRAMEWORK_KINDS = [
+  'standards',
+  'program_classification',
+  'exam_outline',
+  'credit_recommendation',
+  'credential_format',
+] as const;
+export type FrameworkKind = (typeof FRAMEWORK_KINDS)[number];
+
 export interface Framework {
   /** A stable short key, added to alignments by the artifact builder. */
   id: string;
   /** The framework's full published name, exactly as `alignment.framework` must write it. */
   name: string;
   authority: string;
+  kind?: FrameworkKind;
 }
 
 export const FRAMEWORKS: readonly Framework[] = [

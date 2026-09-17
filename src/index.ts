@@ -4,22 +4,29 @@
  * Read `SPEC.md` first. This package is the code side of that contract: Zod schemas for
  * every entity and value object (§3), the `ekgId` helpers (§4), the artifact types (§8),
  * the framework registry (§6.2), resource URL identity (§4.4), audience ratings (§7.4),
- * integrity helpers (§8.5), and the whole-graph validator (§11).
+ * integrity helpers (§8.5), the whole-graph validator (§11), the commons' reference entities
+ * (§3.9), import bundles (§9.7) and the change feed (§8.6).
  */
 
 export {
   EKG_ID_PATTERN,
   EKG_TYPES,
+  GRAPH_EKG_ID_PATTERN,
+  GRAPH_TYPES,
+  REFERENCE_TYPES,
   ULID_PATTERN,
   anyEkgId,
   ekgId,
+  graphEkgId,
   isEkgId,
   isEkgIdOf,
   isEkgType,
+  isGraphType,
+  isReferenceType,
   mintEkgId,
   parseEkgId,
 } from './ekg-id.js';
-export type { EkgId, EkgType } from './ekg-id.js';
+export type { EkgId, EkgType, GraphType, ReferenceType } from './ekg-id.js';
 
 export {
   ASSESSMENT_KINDS,
@@ -50,6 +57,7 @@ export {
   resource,
   semver,
   slug,
+  sourceCitation,
   status,
   superseded,
   wikilink,
@@ -83,6 +91,7 @@ export type {
   Relation,
   Resource,
   ResourceKind,
+  SourceCitation,
   Status,
 } from './schema.js';
 
@@ -91,6 +100,8 @@ export {
   ARTIFACT_PREFIX,
   ARTIFACT_VERSION,
   CACHE_CONTROL,
+  FEED_CHANGES,
+  FEED_LIMIT,
   SCHEMA_VERSION,
   changelog,
   changelogDomainCounts,
@@ -98,17 +109,80 @@ export {
   checksums,
   domainFile,
   edge,
+  feed,
+  feedEntry,
   manifest,
   manifestDomain,
   sha256Hex as sha256HexSchema,
 } from './artifact.js';
-export type { Changelog, ChangelogEntry, Checksums, DomainFile, Edge, Manifest } from './artifact.js';
+export type {
+  Changelog,
+  ChangelogEntry,
+  Checksums,
+  DomainFile,
+  Edge,
+  Feed,
+  FeedChange,
+  FeedEntry,
+  Manifest,
+} from './artifact.js';
 
 export { sha256Hex, verifyChecksums } from './checksums.js';
 export type { ChecksumMismatch } from './checksums.js';
 
-export { FRAMEWORKS, frameworkById, frameworkByName, frameworkByNameLoosely } from './frameworks.js';
-export type { Framework } from './frameworks.js';
+export { FRAMEWORKS, FRAMEWORK_KINDS, frameworkById, frameworkByName, frameworkByNameLoosely } from './frameworks.js';
+export type { Framework, FrameworkKind } from './frameworks.js';
+
+export { DEGREE_LEVELS, STANDARD_KINDS, outcomeMapping, reference, referenceCommons } from './reference.js';
+export type {
+  DegreeLevel,
+  OutcomeMapping,
+  ReferenceEntity,
+  ReferenceFramework,
+  ReferenceInstitution,
+  ReferenceOffering,
+  ReferencePlatform,
+  ReferenceProgram,
+  ReferenceStandard,
+  StandardKind,
+} from './reference.js';
+
+export {
+  CONTRIBUTOR_IDENTITY_PATTERN,
+  DEDUPE_DECISIONS,
+  IMPORT_BUNDLE_VERSION,
+  IMPORT_DECISIONS,
+  LOCAL_ID_PATTERN,
+  PROPOSAL_COLLECTIONS,
+  REGISTERED_IDENTITIES,
+  REJECTION_REASONS,
+  bundleRef,
+  dedupeEvidence,
+  importBundle,
+  importProducer,
+  importReport,
+  importReportItem,
+  isLocalId,
+  isRegisteredIdentity,
+  localId,
+  producerIdentity,
+  proposals,
+  qualityProposal,
+  validateImportBundle,
+} from './import-bundle.js';
+export type {
+  DedupeEvidence,
+  ImportBundle,
+  ImportBundleValidation,
+  ImportDecision,
+  ImportProducer,
+  ImportReport,
+  ImportReportItem,
+  ProposalCollection,
+  QualityProposal,
+  RegisteredIdentity,
+  RejectionReason,
+} from './import-bundle.js';
 
 export { normalizeResourceUrl, sameResourceUrl } from './url.js';
 

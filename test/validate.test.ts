@@ -180,7 +180,61 @@ describe('validateGraph, source mode (SPEC §11)', () => {
   });
 });
 
+describe('validateGraph over the commons\' reference entities (SPEC §3.9)', () => {
+  const provenance = { source: 'opendegree', generatedAt: '2026-09-16T02:00:00Z' };
+  const retrievedAt = '2026-09-16T02:00:00Z';
+  const license = 'New York State Education Department, public materials';
+  function referenceSet() {
+    return [
+      ...sourceGraph(),
+      { ekgId: 'ekg:framework:01JBXFRAMEW0RKNYSMATH00000', slug: 'nys-nextgen-math', type: 'framework', name: 'NYS Next Generation Mathematics Learning Standards', authority: 'New York State Education Department', kind: 'standards', jurisdiction: 'US-NY', subject: 'mathematics', url: 'https://www.nysed.gov/standards-instruction/mathematics', license, provenance, retrievedAt },
+      { ekgId: 'ekg:standard:01JBXSTDGE0GC0100000000000', slug: 'nys-nextgen-math-geo-g-co-1', type: 'standard', frameworkId: 'nys-nextgen-math', code: 'GEO-G.CO.1', statement: 'Know precise definitions of angle, circle, perpendicular line, parallel line, and line segment, based on the undefined notions of point, line, distance along a line, and distance around a circular arc.', kind: 'objective', parentCode: 'GEO-G.CO', url: 'https://www.nysed.gov/standards-instruction/mathematics', license, provenance, retrievedAt },
+      { ekgId: 'ekg:institution:01JBX1NSTHVCC0000000000000', slug: 'hudson-valley-community-college', type: 'institution', name: 'Hudson Valley Community College', url: 'https://www.hvcc.edu', license: 'IPEDS, public data', provenance, retrievedAt },
+      { ekgId: 'ekg:offering:01JBX0FFER1NGGE0M000000000', slug: 'hvcc-math-geometry', type: 'offering', institution: 'ekg:institution:01JBX1NSTHVCC0000000000000', code: 'MATH 101', title: 'Geometry', outcomeMappings: [{ outcome: 'ekg:outcome:01JBX0DEFNTERMS00000000000', coverage: 0.8, confidence: 0.6, provenance }], license: 'catalog terms', provenance, retrievedAt },
+      { ekgId: 'ekg:program:01JBXPR0GRAMMATH0000000000', slug: 'hvcc-mathematics-as', type: 'program', institution: 'ekg:institution:01JBX1NSTHVCC0000000000000', title: 'Mathematics', degreeLevel: 'associate', cipCode: '27.0101', requiredOfferings: ['ekg:offering:01JBX0FFER1NGGE0M000000000'], license: 'catalog terms', provenance, retrievedAt },
+    ];
+  }
+
+  it('accepts reference entities beside graph entities in source mode, resolving their references', () => {
+    const result = validateGraph(referenceSet());
+    expect(result.errors).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('runs V-02 and V-10 over reference entities and names them; supersession is typed at schema level (V-09)', () => {
+    const set = referenceSet();
+    (set[7] as { institution: string }).institution = 'ekg:institution:01JBXN0SVCH1NST00000000000';
+    (set[8] as { requiredOfferings: string[] }).requiredOfferings = ['ekg:offering:01JBXN0SVCH0FFER1NG0000000'];
+    const { errors } = validateGraph(set);
+    expect(errors.find((e) => e.rule === 'V-02' && e.slug === 'hvcc-math-geometry')?.path).toBe('institution');
+    expect(errors.find((e) => e.rule === 'V-02' && e.slug === 'hvcc-mathematics-as')?.path).toBe('requiredOfferings[0]');
+    const wrongType = referenceSet();
+    (wrongType[8] as Record<string, unknown>).supersededBy = 'ekg:institution:01JBX1NSTHVCC0000000000000';
+    expect(validateGraph(wrongType).errors.find((e) => e.slug === 'hvcc-mathematics-as')).toMatchObject({ rule: 'V-09', path: 'supersededBy' });
+    const dup = referenceSet();
+    dup.push({ ...(dup[5] as Record<string, unknown>), slug: 'nys-nextgen-math-geo-g-co-1-again' } as never);
+    expect(rules(validateGraph(dup).errors)).toContain('V-10');
+  });
+
+  it('requires an explicit licence and a retrieval date on every reference entity (EKG-SPEC-116)', () => {
+    const set = referenceSet();
+    delete (set[6] as Record<string, unknown>).license;
+    delete (set[6] as Record<string, unknown>).retrievedAt;
+    const { errors } = validateGraph(set);
+    expect(errors.filter((e) => e.slug === 'hudson-valley-community-college').map((e) => e.path).sort()).toEqual(['license', 'retrievedAt']);
+  });
+});
+
 describe('validateDomainFile, artifact mode (SPEC §8, V-23)', () => {
+  it('rejects a reference entity among the nodes: a domain file never carries one (EKG-SPEC-115)', () => {
+    const file = clone(geometry);
+    (file.nodes as unknown[]).push({ ekgId: 'ekg:standard:01JBXSTDGE0GC0100000000000', slug: 'geo-g-co-1', type: 'standard', frameworkId: 'nys-nextgen-math', code: 'GEO-G.CO.1', statement: 'Know precise definitions of angle, circle, perpendicular line, parallel line, and line segment.', kind: 'objective', license: 'x', provenance: geometry.domain.provenance, retrievedAt: '2026-09-16T02:00:00Z' });
+    const result = validateDomainFile(file);
+    expect(result.ok).toBe(false);
+    expect(result.errors[0]?.slug).toBe('(domain file)');
+    expect(result.errors[0]?.path).toContain('nodes[8]');
+  });
+
   it('accepts the Appendix B example with no errors and no warnings', () => {
     const result = validateDomainFile(geometry);
     expect(result.errors).toEqual([]);

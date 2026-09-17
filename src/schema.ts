@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { anyEkgId, ekgId } from './ekg-id.js';
+import { ekgId, graphEkgId } from './ekg-id.js';
 
 /*
  * Entity and value-object schemas for the eCollective Knowledge Graph, SPEC §3.
@@ -162,6 +162,15 @@ export const alignment = z.object({
 });
 export type Alignment = z.infer<typeof alignment>;
 
+/** A cited source: where something was taken from, under what licence, and when (SPEC §9.7 `scope.sources`). */
+export const sourceCitation = z.object({
+  title: z.string().min(1),
+  url: z.string().url(),
+  license: z.string().optional(),
+  retrievedAt: z.iso.datetime(),
+});
+export type SourceCitation = z.infer<typeof sourceCitation>;
+
 /**
  * The audience rating on a resource (SPEC §7.4, EKG-SPEC-110 to EKG-SPEC-113): a band, the
  * descriptors that explain it, and the basis it rests on. Optional on a resource, with no default,
@@ -189,7 +198,8 @@ export const audience = z.object({
 });
 export type Audience = z.infer<typeof audience>;
 
-const resourceFields = {
+/** The resource fields shared by source, artifact and import-bundle resources; a module export, not part of the public surface. */
+export const resourceFields = {
   title: z.string().min(1),
   url: z.string().url(),
   kind: z.enum(RESOURCE_KINDS),
@@ -231,7 +241,8 @@ export type ArtifactResource = z.infer<typeof artifactResource>;
 
 /** Commons plus identity, on every entity (EKG-SPEC-04). Provenance optional in source. */
 export const commons = {
-  ekgId: anyEkgId,
+  /** A graph entity type only: a reference id never names a graph entity (EKG-SPEC-115). */
+  ekgId: graphEkgId,
   slug,
   previousSlugs: z.array(slug).default([]),
   status: status.default('draft'),

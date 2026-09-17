@@ -91,9 +91,12 @@ state to `submitted`.
 
 ## 3. Entities and fields
 
-Eight shapes are defined. Six are **entities** — they have identity, a lifecycle, and a place in
-the artifact: Domain, Outcome, Course, Assessment, Credential, Resource. Two are **value objects** —
-Alignment and Provenance — which have no independent identity and always appear inside an entity.
+Eight shapes are defined for the graph. Six are **entities** — they have identity, a lifecycle, and
+a place in the artifact: Domain, Outcome, Course, Assessment, Credential, Resource. Two are **value
+objects** — Alignment and Provenance — which have no independent identity and always appear inside
+an entity. From 0.2.0 the commons adds six **reference entities** (§3.9) — Framework, Standard,
+Institution, Program, Offering, Platform — which are facts about the world the graph points at,
+never curriculum, and which never appear in a graph domain file.
 
 **Reading the tables.** Every field is adopted **verbatim** from Open Degree's
 `src/content.config.ts` unless marked **+**, which means this specification adds it. `?` marks an
@@ -254,6 +257,85 @@ the full record.
 identity: no email addresses, no legal names unless the person publishes under one, and no learner
 identifier of any kind.
 
+### 3.9 Reference entities (the commons)
+
+The Open Degree commons (`app.opendegree.org`) holds what is too large, too fast-changing or too
+crowd-shaped for the Markdown standard: the standards every jurisdiction publishes, the catalog of
+what institutions teach, and the platforms resources come from. These are **reference entities**:
+facts about the world that the graph points at (an alignment names a standard, an offering maps
+onto outcomes, a resource comes from a platform), never curriculum. Six types, each with its own
+`ekgId` type (§4.1): `framework`, `standard`, `institution`, `program`, `offering`, `platform`.
+
+**EKG-SPEC-115** Reference entities are published by the commons service under its own prefix,
+`https://app.opendegree.org/api/commons/v1/`, with the integrity, cache and retention rules of
+§8.5 and §8.6. They MUST NOT appear in a `/api/graph/v1` domain file, in `changelog.json` or in
+`feed.json`, and a graph entity field references a reference entity only where this specification
+says so. A consumer of the graph artifact MAY ignore them entirely and remain conformant.
+
+Every reference entity carries the reference commons:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `ekgId` | `ekg:<type>:<ULID>` | required; §4.1 |
+| `slug` | kebab-case `string` | required; for a framework, its registry `frameworkId` |
+| `previousSlugs` | `string[]` ? (`[]`) | §4.2 |
+| `type` | literal | required |
+| `version` | semver `string` ? (`0.1.0`) | |
+| `license` | `string` | required and explicit; EKG-SPEC-119 |
+| `provenance` | Provenance | required; §3.8 |
+| `retrievedAt` | ISO 8601 `string` | required; when the record was taken from its source |
+| `supersededBy` | ref → same type ? | marks a merged or retired record; there is no lifecycle `status` |
+
+**EKG-SPEC-116** Every reference entity carries `provenance`, `retrievedAt` and an explicit
+`license`. It MUST NOT contain personal data: an institution is an organisation, an offering is a
+catalog entry, and no instructor's name is stored unless that person is the published author of a
+licensed syllabus, in which case the syllabus's own licence and URL are recorded with it.
+
+**Framework** (`type: "framework"`): a registry row of §6.2 as reference data, with its tree.
+`name`, `authority` and `kind` (`standards` \| `program_classification` \| `exam_outline` \|
+`credit_recommendation` \| `credential_format`) are required; `jurisdiction` (`US-NY`, `US`,
+`international`), `subject` and `url` are optional. Its `slug` is its registry id.
+
+**Standard** (`type: "standard"`): one node of a framework's own tree, exactly as the publisher
+structures it, never paraphrased. `frameworkId`, `code`, `statement` and `kind` (`level` \|
+`domain` \| `cluster` \| `objective`) are required; `level`, `parentCode` and `url` are optional.
+
+**EKG-SPEC-117** A standard is an alignment target. It MUST NOT be imported as an Outcome, and its
+`statement` MUST NOT be restated as one (EKG-SPEC-34, restated for the reference family; V-25 for
+bundles). The reverse index from a standard to the outcomes aligned to it is derived by the
+commons from outcome alignments and is never authored.
+
+**Institution** (`type: "institution"`): `name` is required; `ipedsUnitId`, `sector`, `region`,
+`url`, `accreditor` and `tuition` (`{ inState?, outOfState?, year? }`) are optional.
+
+**Program** (`type: "program"`): `institution` (ref → Institution), `title` and `degreeLevel`
+(`certificate` \| `associate` \| `bachelor` \| `master` \| `doctoral` \| `other`) are required;
+`cipCode`, `credits`, `url` and `requiredOfferings` (ref[] → Offering, `[]`) are optional.
+
+**Offering** (`type: "offering"`): `institution`, `code` and `title` are required; `description`,
+`credits`, `level`, `prerequisites` (`string[]`, as the catalog writes them), `syllabusUrl`,
+`syllabusLicense`, `deliveryModes[]`, `termsOffered[]`, `costEstimate` and `url` are optional;
+`outcomeMappings[]` (`[]`) lists the offering's claimed coverage of graph outcomes, each
+`{ outcome: ref → Outcome, coverage 0–1, confidence 0–1, provenance }`.
+
+**Platform** (`type: "platform"`): `name`, `url` and `kind` are required; `pricing`,
+`accessibility`, `ageRequirement` (integer), `harvestAllowed` (`boolean`, `false`), `embedPolicy`
+(§3.6's enum, `unknown`) and `safetyNotes` are optional.
+
+**EKG-SPEC-118** An equivalence between two offerings, or between an offering and a Course, is a
+record of the commons service, not an entity of this specification. It is derived from outcome
+overlap above a threshold the service publishes, or imported from a public articulation agreement,
+and each record states its basis.
+
+**EKG-SPEC-119** The commons MAY publish reference entities under terms other than CC BY-SA 4.0,
+because catalog data has its own sources; that is why `license` is required and explicit on every
+record. Graph content stays CC BY-SA 4.0 (EKG-SPEC-105).
+
+Validation: the identity, slug and supersession rules of §11 (V-09 to V-16) apply to reference
+entities exactly as to graph entities, and V-02 applies to their references (`institution`,
+`requiredOfferings`, `outcomeMappings[].outcome`). The package's `validateGraph` accepts them in
+source mode, beside graph entities or alone, for that purpose.
+
 ## 4. Identifiers
 
 Two identifiers per entity, with different jobs. The `slug` is for humans and URLs and changes; the
@@ -262,8 +344,11 @@ Two identifiers per entity, with different jobs. The `slug` is for humans and UR
 ### 4.1 `ekgId`
 
 **EKG-SPEC-15** Every entity has an `ekgId` of the form `ekg:<type>:<ULID>`, where `<type>` is one
-of `domain`, `outcome`, `course`, `assessment`, `credential`, `resource`, and `<ULID>` is a
-Crockford base-32 ULID: 26 characters, alphabet `0123456789ABCDEFGHJKMNPQRSTVWXYZ`, uppercase.
+of the six graph types `domain`, `outcome`, `course`, `assessment`, `credential`, `resource`, or
+one of the six reference types `framework`, `standard`, `institution`, `program`, `offering`,
+`platform` (§3.9), and `<ULID>` is a Crockford base-32 ULID: 26 characters, alphabet
+`0123456789ABCDEFGHJKMNPQRSTVWXYZ`, uppercase. *Amended in 0.2.0: the reference types were added;
+a graph entity never carries a reference-type id (EKG-SPEC-115).*
 
 ```
 ekg:outcome:01JBWX3QK7Z8Y4N2M5R6T7V8W9
@@ -581,6 +666,7 @@ https://www.opendegree.org/api/graph/v1/domains/<slug>.json     # one domain: no
 https://www.opendegree.org/api/graph/v1/all.json.gz             # everything, for a full reimport
 https://www.opendegree.org/api/graph/v1/checksums.json          # sha256 of every file above
 https://www.opendegree.org/api/graph/v1/changelog.json          # the last 100 builds
+https://www.opendegree.org/api/graph/v1/feed.json               # the last 1,000 entity-level changes (0.2.0)
 https://www.opendegree.org/api/graph/v1/builds/<buildId>/…      # immutable snapshot of one build
 ```
 
@@ -677,6 +763,7 @@ consumer MUST verify the checksum of every file it fetches against the manifest 
 | `domains/*.json` | `public, max-age=3600, stale-while-revalidate=86400` | ETag required |
 | `all.json.gz` | `public, max-age=3600` | ETag required |
 | `checksums.json`, `changelog.json` | `public, max-age=300` | — |
+| `feed.json` | `public, max-age=300, stale-while-revalidate=3600` | polled like the manifest (0.2.0) |
 | `builds/<buildId>/*` | `public, max-age=31536000, immutable` | content-addressed by build |
 
 Every file MUST carry a strong `ETag` and MUST honour `If-None-Match`. Every file MUST be served
@@ -696,6 +783,17 @@ re-fetch.
 
 **EKG-SPEC-54** The last 100 builds MUST remain retrievable under `builds/<buildId>/`. A consumer
 that has fallen behind can always find the build its stored state came from.
+
+**EKG-SPEC-120** A publisher SHOULD emit `feed.json` beside `changelog.json`: the last 1,000
+entity-level changes, newest first, each `{ ekgId, type, change, version, buildId, at }`, where
+`change` is `created`, `updated`, `merged` or `deprecated`, `version` is the entity's version after
+the change, `buildId` names the build and `at` is that build's `generatedAt`. It carries graph
+entities only (EKG-SPEC-115) and is served with the manifest's cache rules. A consumer that creates
+content in real time reads it to hear about upstream changes faster than a daily import.
+
+**EKG-SPEC-121** A consumer MAY register a webhook with the commons service to be called on
+publish with each new feed entry. Polling `feed.json` every five minutes is conformant without
+one.
 
 ### 8.7 Import behaviour
 
@@ -745,8 +843,9 @@ MUST be rejected on sight.
 
 **EKG-SPEC-62** Each contributing product uses one dedicated machine identity, installed as a GitHub
 App with the narrowest workable permissions, never a human's personal access token. Registered
-identities: `diy-degree-curation` (DIY Degree), `instructos-mapping` (InstructOS). A new consumer
-registers its identity under `GOVERNANCE.md` before its first pull request.
+identities: `diy-degree-curation` (DIY Degree), `instructos-mapping` (InstructOS),
+`opendegree-commons` (the Open Degree commons, §13.5). A new consumer registers its identity under
+`GOVERNANCE.md` before its first pull request. *Amended in 0.2.0: `opendegree-commons` added.*
 
 **EKG-SPEC-63** The bot identity appears in `contributors` and in `provenance.reviewedBy` only when
 a human actually reviewed the proposal on the contributing side; a bot MUST NOT record itself as a
@@ -791,6 +890,127 @@ course, not a measurable statement), `too-broad` (two or more concepts, needs sp
 **EKG-SPEC-67** A rejection MUST name a reason and, for `duplicate`, MUST name the surviving node's
 slug. A consumer records the rejection and MUST NOT re-propose the same content without addressing
 the reason.
+
+### 9.7 Import bundles
+
+The graph and the commons are seeded largely by AI research sessions, subject by subject, standard
+by standard, catalog by catalog. Each session, script or tool emits one format, the **import
+bundle**, which this package validates and the commons imports as proposals, never as canonical
+content. A bundle is a container for the channels of §9.1 (nodes and edges, resources, and the
+aliases and alignments that ride with them) plus reference data bound for the commons (§3.9). It
+is not a fifth channel, and nothing in it changes who may set a `status` (EKG-SPEC-27).
+
+A bundle carries:
+
+| Field | Notes |
+| --- | --- |
+| `bundleVersion` | the version of this section the bundle follows, semver; `1.x` today |
+| `producer` | `tool`, `toolVersion`, `modelId`, `promptVersion`, `sessionId` (a string, never a person), `producedAt`, and `identity`: a registered product identity (§9.3) or `contributor:<handle>` |
+| `scope` | `subject`, `gradeBand`, `frameworkIds[]`, and `sources[]`, each `{ title, url, license?, retrievedAt }` |
+| `licenseAcceptance` | `graphContent: "CC BY-SA 4.0"` (EKG-SPEC-105) and `referenceContent`, the commons' terms the producer accepts |
+| `references[]` | existing `ekgId`s the bundle relies on, found in the current artifact |
+| `proposals` | `domains`, `outcomes`, `edges`, `aliases`, `alignments`, `courses`, `resources`, `frameworks`, `standards`, `institutions`, `programs`, `offerings`, each a list |
+
+Every proposal carries a bundle-local `localId` (`tmp:<kebab-case>`), the producer's `confidence`
+(0 to 1) and its own `provenance` (§3.8). A reference from one proposal to another is a `tmp:` id;
+a reference to an existing entity is its `ekgId`. A resource proposal carries the §3.6 fields, the
+outcomes it teaches, and MAY carry a `qualityProposal` (the six rubric dimensions, 1 to 5, with
+reasons). Timestamps are UTC with a `Z` suffix.
+
+**EKG-SPEC-122** A producer never mints an `ekgId`. New things carry `tmp:` ids that are unique
+within the bundle; existing things are named by the `ekgId` the producer found by searching the
+current artifact first (EKG-SPEC-03). A `tmp:` id is replaced by a real identifier only when the
+commons or the publisher accepts the proposal (EKG-SPEC-86).
+
+**EKG-SPEC-123** Every new outcome carries `dedupe` evidence: the `queries` run, the `topMatches`
+found (each an `ekgId`, a title and a score) and a `decision` of `new`, `alias_of` or
+`duplicate_of`, the latter two naming the existing outcome in `of`. A bundle whose new outcome
+lacks it is rejected. An outcome whose decision is `alias_of` or `duplicate_of` becomes an alias or
+alignment proposal for the outcome it names, never a node.
+
+**EKG-SPEC-124** Every proposal carries `provenance` and a `confidence`; an AI-authored proposal
+names the model and the prompt version (V-19). Nothing in a bundle is personal data, and nothing
+in it is learner work (EKG-SPEC-59).
+
+**EKG-SPEC-125** A proposed outcome MUST meet the authoring rules of the standard: one concept, a
+first-person measurable statement, immediate prerequisites only, at least one evidence statement.
+A proposed resource MUST carry `license` and an `embedPolicy` other than `unknown` (EKG-SPEC-38)
+or it is rejected. A proposed reference item MUST carry `retrievedAt` and the URL it was retrieved
+from.
+
+**EKG-SPEC-126** The commons imports a bundle as proposals into its review queues. Curriculum
+proposals (domains, outcomes, edges, aliases, alignments, courses) become pull requests against the
+standard when accepted, one proposal per pull request (EKG-SPEC-60/61); resources, standards,
+catalog entities and mappings become records of the commons service. A resource that clears the
+commons' automated quality and audience floors MAY be published as provisional ahead of review,
+labelled as such (EKG-SPEC-30).
+
+**EKG-SPEC-127** The importer answers with a machine-readable report: for every proposal, its
+`ref` (the `tmp:` id, or the `ekgId` it modifies), its `collection`, a `decision` of `accepted`,
+`queued`, `merged_into` or `rejected`, the surviving `of` for a merge or a duplicate, a `reason`
+from §9.6 for a rejection, and the validation errors that led to it, each naming the rule
+(EKG-SPEC-76). A producer corrects and resubmits only the rejected items, in a new bundle that
+names the accepted ones by their now-real identifiers.
+
+**EKG-SPEC-128** The commons service accepts a bundle through a propose API from a registered
+identity and answers with the report of EKG-SPEC-127, synchronously for validation and again when
+review outcomes are known. Its latency targets are the commons' own requirements, not this
+specification's.
+
+**EKG-SPEC-129** The commons importer MUST validate every bundle with the pinned package, MUST run
+V-25 to V-28 over it, and MUST reject a bundle whole on any error, writing nothing; the report says
+which items failed and why.
+
+Example: a bundle from a research session over Open Degree's Geometry seed, proposing the outcome
+the credential body names as not yet written, its edge to the existing stub, a resource, and the
+standard it aligns to. The existing ids are Appendix B's; the proposed values are illustrative.
+
+```json
+{
+  "bundleVersion": "1.0.0",
+  "producer": { "tool": "corthovore-research", "toolVersion": "0.4.0", "modelId": "claude-sonnet-5",
+    "promptVersion": "seed-outcomes-v1", "sessionId": "geometry-2026-09-16-a",
+    "producedAt": "2026-09-16T02:00:00Z", "identity": "diy-degree-curation" },
+  "scope": { "subject": "geometry", "gradeBand": "9-12", "frameworkIds": ["nys-nextgen-math"],
+    "sources": [ { "title": "NYS Next Generation Mathematics Learning Standards (P-12)",
+      "url": "https://www.nysed.gov/sites/default/files/programs/standards-instruction/nys-next-generation-mathematics-p-12-standards.pdf",
+      "retrievedAt": "2026-09-16T02:00:00Z" } ] },
+  "licenseAcceptance": { "graphContent": "CC BY-SA 4.0", "referenceContent": "commons catalog terms v1" },
+  "references": ["ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "ekg:outcome:01JBX4TRNGCRTRA00000000000"],
+  "proposals": {
+    "outcomes": [ {
+      "localId": "tmp:prove-theorems-about-triangles", "confidence": 0.8,
+      "provenance": { "source": "ai", "generatedAt": "2026-09-16T02:00:00Z",
+        "modelId": "claude-sonnet-5", "promptVersion": "seed-outcomes-v1" },
+      "title": "Prove theorems about triangles",
+      "statement": "I can prove theorems about triangles, including that the base angles of an isosceles triangle are congruent and that the angles of a triangle sum to 180 degrees.",
+      "evidence": ["Writes a two-column or paragraph proof that the base angles of an isosceles triangle are congruent, citing the congruence criterion used."],
+      "domain": "ekg:domain:01JBWX3QK7Z8Y4N2M5R6T7V8W9", "level": "advanced",
+      "prerequisites": ["ekg:outcome:01JBX4TRNGCRTRA00000000000"],
+      "alignments": [ { "framework": "NYS Next Generation Mathematics Learning Standards", "code": "GEO-G.CO.10" } ],
+      "dedupe": { "queries": ["prove theorems about triangles", "isosceles base angles"],
+        "topMatches": [ { "ekgId": "ekg:outcome:01JBX4TRNGCRTRA00000000000",
+          "title": "Prove triangles congruent with SSS, SAS, and ASA", "score": 0.41 } ],
+        "decision": "new" }
+    } ],
+    "edges": [ { "localId": "tmp:edge-triangles-criteria", "confidence": 0.9,
+      "provenance": { "source": "ai", "generatedAt": "2026-09-16T02:00:00Z", "modelId": "claude-sonnet-5", "promptVersion": "seed-outcomes-v1" },
+      "from": "tmp:prove-theorems-about-triangles", "to": "ekg:outcome:01JBX4TRNGCRTRA00000000000", "kind": "prerequisite" } ],
+    "resources": [ { "localId": "tmp:khan-triangle-proofs", "confidence": 0.7,
+      "provenance": { "source": "ai", "generatedAt": "2026-09-16T02:00:00Z", "modelId": "claude-sonnet-5", "promptVersion": "seed-outcomes-v1" },
+      "title": "Khan Academy, High School Geometry", "url": "https://www.khanacademy.org/math/geometry",
+      "kind": "video", "cost": "free", "provider": "Khan Academy", "license": "CC BY-NC-SA 3.0 US",
+      "embedPolicy": "link-only", "outcomes": ["tmp:prove-theorems-about-triangles"],
+      "qualityProposal": { "correctness": 5, "coverage": 3, "clarity": 4, "efficiency": 4,
+        "accessibility": 4, "trust": 5, "reasons": "Captioned, free, but covers the whole course rather than the theorem." } } ],
+    "standards": [ { "localId": "tmp:nys-geo-g-co-10", "confidence": 1,
+      "provenance": { "source": "import", "generatedAt": "2026-09-16T02:00:00Z" },
+      "frameworkId": "nys-nextgen-math", "code": "GEO-G.CO.10", "kind": "objective", "parentCode": "GEO-G.CO",
+      "statement": "Prove theorems about triangles.", "url": "https://www.nysed.gov/standards-instruction/mathematics",
+      "retrievedAt": "2026-09-16T02:00:00Z" } ]
+  }
+}
+```
 
 ## 10. Evidence aggregates
 
@@ -867,7 +1087,7 @@ any violation (EKG-SPEC-56).
 | V-06 | Wikilink references parse: brackets and `\|alias` stripped, remainder non-empty. | `content.config.ts` `wikilink` |
 | V-07 | Every entity has exactly the `type` literal of its collection. | `content.config.ts` |
 | V-08 | Entity ids (file names) are unique within a collection and kebab-case. | Astro loader |
-| V-09 | `ekgId` matches `^ekg:(domain\|outcome\|course\|assessment\|credential\|resource):[0-9A-HJKMNP-TV-Z]{26}$`. | added |
+| V-09 | `ekgId` matches `^ekg:(domain\|outcome\|course\|assessment\|credential\|resource\|framework\|standard\|institution\|program\|offering\|platform):[0-9A-HJKMNP-TV-Z]{26}$`; in a domain file, the changelog and the feed, only the first six types (EKG-SPEC-115). | added; amended 0.2.0 |
 | V-10 | `ekgId` is unique across the whole graph, all types. | added |
 | V-11 | The `<type>` segment of `ekgId` equals the entity's `type`. | added |
 | V-12 | `slug` is unique within its type, and matches `^[a-z0-9]+(-[a-z0-9]+)*$`. | added |
@@ -883,6 +1103,13 @@ any violation (EKG-SPEC-56).
 | V-22 | Every `alignment.framework` string that matches a registry name matches it exactly, including case; an unregistered framework is a warning, not an error. | added |
 | V-23 | Artifact only: every `resourceIds` entry resolves to a resource in the same domain file; every edge `from` is in the file; every edge whose `to` is outside carries `targetDomain`. | added |
 | V-24 | Artifact only: every published file's `sha256` matches `checksums.json`. | added |
+| V-25 | Bundle only: a proposed outcome's `statement`, with whitespace collapsed and case folded, is not the `statement` of a standard proposed in the same bundle (EKG-SPEC-117). | added 0.2.0 |
+| V-26 | Bundle only: `tmp:` ids are unique within the bundle; every `tmp:` reference resolves to a proposal of the expected collection; every `ekgId` reference is well-formed and of the expected type; no proposal carries a minted `ekgId` (EKG-SPEC-122). | added 0.2.0 |
+| V-27 | Bundle only: every new outcome carries `dedupe` evidence, and an `alias_of` or `duplicate_of` decision names the existing outcome in `of` (EKG-SPEC-123). | added 0.2.0 |
+| V-28 | Bundle only: every proposed resource carries `license` and an `embedPolicy` other than `unknown`; every proposed reference item carries `retrievedAt` and a URL (EKG-SPEC-125). | added 0.2.0 |
+
+V-25 to V-28 apply to import bundles (§9.7) and are run by the commons importer (EKG-SPEC-129). A
+publisher's build and a consumer's import never see a bundle, so EKG-SPEC-74 is unchanged by them.
 
 **EKG-SPEC-75** V-03's cycle check runs over the whole graph, not per domain. A per-domain
 coherence view ignores prerequisites outside the domain when it computes layers, which is correct
@@ -1003,6 +1230,14 @@ nothing at all on its website. This resolves the surface tension with InstructOS
 A school, an employer, or a third-party platform is a consumer too. It MUST honour §14's licence
 terms, MUST render attribution, MUST NOT re-host resources, and MUST NOT present non-`adopted`
 content as adopted. It need do nothing else, and it needs nobody's permission.
+
+### 13.5 Open Degree commons — importer of bundles, publisher of reference data
+
+- [ ] **EKG-SPEC-130** Validates every import bundle with the pinned package, runs V-25 to V-28, and rejects a bundle whole on any error (EKG-SPEC-129).
+- [ ] **EKG-SPEC-131** Imports bundles as proposals only: curriculum proposals reach the standard as pull requests from `opendegree-commons`, one per proposal (EKG-SPEC-60/61/126); nothing it holds asserts a shared `status` (EKG-SPEC-28).
+- [ ] **EKG-SPEC-132** Answers every bundle with the report of EKG-SPEC-127 and records each rejection with a §9.6 reason.
+- [ ] **EKG-SPEC-133** Publishes reference entities under `https://app.opendegree.org/api/commons/v1/` only, never in a graph domain file (EKG-SPEC-115), with an explicit licence on every record (EKG-SPEC-119).
+- [ ] **EKG-SPEC-134** Never stores learner data (EKG-SPEC-90 applies to it as to Open Degree) and never publishes a rater's or a contributor's personal data.
 
 ## 14. Licensing
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { anyEkgId, ekgId } from './ekg-id.js';
-import { artifact, artifactResource, slug, status } from './schema.js';
+import { GRAPH_TYPES, ekgId, graphEkgId } from './ekg-id.js';
+import { artifact, artifactResource, semver, slug, status } from './schema.js';
 
 /*
  * The published artifact (SPEC §8): the manifest, per-domain files, checksums and changelog.
@@ -21,6 +21,8 @@ export const ARTIFACT_PATHS = {
   all: 'all.json.gz',
   checksums: 'checksums.json',
   changelog: 'changelog.json',
+  /** The last 1,000 entity-level changes, beside the changelog (EKG-SPEC-120). */
+  feed: 'feed.json',
   build: (buildId: string) => `builds/${buildId}/`,
 } as const;
 
@@ -78,7 +80,7 @@ export const domainFile = z.object({
   edges: z.array(edge),
   resources: z.array(artifactResource),
   /** Entity bodies as raw CommonMark, keyed by ekgId; never rendered HTML (EKG-SPEC-49). */
-  body: z.record(anyEkgId, z.string()),
+  body: z.record(graphEkgId, z.string()),
 });
 export type DomainFile = z.infer<typeof domainFile>;
 
@@ -108,7 +110,7 @@ export const changelogEntry = z.object({
   domains: z.record(slug, changelogDomainCounts),
   /** The ekgIds involved in any merge: the deprecated node and its survivor. */
   merges: z
-    .array(z.object({ deprecated: anyEkgId, survivor: anyEkgId }))
+    .array(z.object({ deprecated: graphEkgId, survivor: graphEkgId }))
     .default([]),
   /** Fields inside a deprecation window, named in every build (EKG-SPEC-80). */
   deprecatedFields: z.array(z.string()).default([]),
@@ -119,6 +121,28 @@ export type ChangelogEntry = z.infer<typeof changelogEntry>;
 export const changelog = z.array(changelogEntry).max(100);
 export type Changelog = z.infer<typeof changelog>;
 
+/** What happened to an entity in a build, as the feed reports it (EKG-SPEC-120). */
+export const FEED_CHANGES = ['created', 'updated', 'merged', 'deprecated'] as const;
+export type FeedChange = (typeof FEED_CHANGES)[number];
+export const FEED_LIMIT = 1000;
+
+/** One entity-level change in `feed.json`. */
+export const feedEntry = z.object({
+  ekgId: graphEkgId,
+  type: z.enum(GRAPH_TYPES),
+  change: z.enum(FEED_CHANGES),
+  /** The entity's `version` after the change. */
+  version: semver,
+  buildId: z.string().min(1),
+  /** The build's `generatedAt`. */
+  at: z.iso.datetime(),
+});
+export type FeedEntry = z.infer<typeof feedEntry>;
+
+/** `feed.json`: the last 1,000 entity-level changes, newest first (EKG-SPEC-120). */
+export const feed = z.array(feedEntry).max(FEED_LIMIT);
+export type Feed = z.infer<typeof feed>;
+
 /** Cache-Control values a publisher serves per path (EKG-SPEC-51). */
 export const CACHE_CONTROL = {
   manifest: 'public, max-age=300, stale-while-revalidate=3600',
@@ -126,5 +150,6 @@ export const CACHE_CONTROL = {
   all: 'public, max-age=3600',
   checksums: 'public, max-age=300',
   changelog: 'public, max-age=300',
+  feed: 'public, max-age=300, stale-while-revalidate=3600',
   build: 'public, max-age=31536000, immutable',
 } as const;

@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ARTIFACT_PATHS,
+  CACHE_CONTROL,
+  FEED_LIMIT,
   changelog,
   checksums,
+  feed,
   manifest,
   normalizeResourceUrl,
   sameResourceUrl,
@@ -66,6 +69,25 @@ describe('checksums and changelog (SPEC §8.5, §8.6)', () => {
     const parsed = changelog.parse([entry]);
     expect(parsed[0]?.domains.geometry?.deprecated).toBe(0);
     expect(changelog.safeParse(Array.from({ length: 101 }, () => entry)).success).toBe(false);
+  });
+});
+
+describe('feed.json (SPEC §8.6, EKG-SPEC-120)', () => {
+  const entry = {
+    ekgId: 'ekg:outcome:01JBX4TRNGCRTRA00000000000', type: 'outcome', change: 'updated', version: '0.2.0',
+    buildId: '8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013', at: '2026-09-05T04:12:07Z',
+  };
+
+  it('sits beside the changelog with the manifest cache rules', () => {
+    expect(ARTIFACT_PATHS.feed).toBe('feed.json');
+    expect(CACHE_CONTROL.feed).toBe(CACHE_CONTROL.manifest);
+  });
+
+  it('lists entity-level changes, newest first, at most 1,000, graph entities only', () => {
+    expect(feed.safeParse([entry, { ...entry, change: 'merged' }]).success).toBe(true);
+    expect(feed.safeParse(Array.from({ length: FEED_LIMIT + 1 }, () => entry)).success).toBe(false);
+    expect(feed.safeParse([{ ...entry, change: 'renamed' }]).success).toBe(false);
+    expect(feed.safeParse([{ ...entry, ekgId: 'ekg:standard:01JBX4TRNGCRTRA00000000000', type: 'standard' }]).success).toBe(false);
   });
 });
 

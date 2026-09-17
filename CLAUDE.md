@@ -43,6 +43,8 @@ does not yet. Publishing is an owner action and is blocked on the package namesp
 │   ├── artifact.ts                            # manifest, domainFile, edge, checksums, changelog (§8)
 │   ├── checksums.ts                           # sha256Hex, verifyChecksums (§8.5, V-24)
 │   ├── frameworks.ts                          # the framework registry (§6.2)
+│   ├── reference.ts                           # the commons' reference entities (§3.9)
+│   ├── import-bundle.ts                       # importBundle, validateImportBundle, the report (§9.7)
 │   ├── url.ts                                 # normalizeResourceUrl (EKG-SPEC-25)
 │   └── validate.ts                            # validateGraph, validateDomainFile (§11)
 ├── test/                                      # vitest; fixtures/geometry.json is Appendix B verbatim
