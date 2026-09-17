@@ -184,7 +184,7 @@ amend `GOVERNANCE.md`; the owner is the arbiter and authorised it with the rest 
    default; consume `feed.json`; move the canonical fields out of the overlay lists; deduplicate
    cross-domain courses in the snapshot.
 4. `www.opendegree.org`: #10 (adopt the fields, emit courses per domain, publish `feed.json`) and
-   the builder swap.
+   the builder swap (https://github.com/ecollective-org/www.opendegree.org/issues/19).
 5. `app.opendegree.org`: #3 there builds against `importBundle`, `validateImportBundle`, the
    report shape, the reference schemas and the feed.
 6. Change J at the next major: `audio`, `course` and `paper` kinds; a `teacher` provenance source.
@@ -202,7 +202,7 @@ permanent from then on.
 | F, H, I reference family, bundles, feed | #9 | #15 | EKG-SPEC-115 to 134; 15, 62 amended | V-25 to V-28 | 2026-09-17 |
 | D, E path definitions, registry | #8 | #16 | EKG-SPEC-135 to 143; 45 prose, V-22 amended | V-29, V-30 | 2026-09-17 |
 | G producer-minted ids | #10 | #17 | EKG-SPEC-144 to 146; 61, 86, §9.4, V-26 amended | — | 2026-09-17 |
-| B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | #18 | EKG-SPEC-147 to 156; EKG-OQ-10 | — | pending |
-| Builder `build-artifact.ts` | #3 | — | — | — | pending |
+| B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | #18 | EKG-SPEC-147 to 156; EKG-OQ-10 | — | 2026-09-17 |
+| Builder `build-artifact.ts` | #3 | #19 | V-23, EKG-SPEC-120 prose, Appendix B amended | — | pending |
 | Follow-ups | #4 | — | — | — | pending |
 | `v0.2.0` tag | — | — | — | — | pending |

@@ -5,7 +5,7 @@
  * every entity and value object (§3), the `ekgId` helpers (§4), the artifact types (§8),
  * the framework registry (§6.2), resource URL identity (§4.4), audience ratings (§7.4),
  * integrity helpers (§8.5), the whole-graph validator (§11), the commons' reference entities
- * (§3.9), import bundles (§9.7) and the change feed (§8.6).
+ * (§3.9), import bundles (§9.7), the change feed (§8.6) and the artifact builder (§8).
  */
 
 export {
@@ -217,6 +217,16 @@ export type {
 } from './import-bundle.js';
 
 export { normalizeResourceUrl, sameResourceUrl } from './url.js';
+
+export { buildArtifact, deriveFeed, diffCounts, sortKeys, stableStringify } from './build-artifact.js';
+export type {
+  BuildOptions,
+  BuildResult,
+  BuiltArtifact,
+  BuiltDomain,
+  PreviousArtifact,
+  SourceEntry,
+} from './build-artifact.js';
 
 export { validateDomainFile, validateGraph } from './validate.js';
 export type {

@@ -13,7 +13,7 @@ This repository holds the **framework**: the specification, the governance, and 
 
 > **Status: v0.2 draft specification, landing change by change; package code at 0.2.0,
 > unreleased.** The specification is filed and citable. `schema.ts` and `validate.ts` exist with
-> tests and the Appendix B artifact validates clean; `build-artifact.ts` does not exist yet (#3).
+> tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
 > Publishing is blocked on the package namespace (#2); until then a consumer pins a packed tarball
 > (`npm pack`) by content, which is conformant. Nothing here is frozen.
 
@@ -105,7 +105,7 @@ the build; `npm pack` produces the tarball a consumer pins until the package is 
 
 ## Roadmap to the v0.1 package
 
-Three deliverables, in order. The first two exist; the third does not.
+Three deliverables, in order. All three exist.
 
 1. **`schema.ts`** — done. The Zod schemas of `SPEC.md` §3, the `ekgId` mint/parse helpers of §4,
    the artifact types of §8, and the provenance and alignment value objects, in `src/`.
@@ -113,9 +113,11 @@ Three deliverables, in order. The first two exist; the third does not.
    schema can express: reference resolution, prerequisite cycles, `ekgId` uniqueness, slug history,
    and supersession chains. Ported from Open Degree's `src/lib/coherence.ts`, which is the reference
    implementation.
-3. **`build-artifact.ts`** — not yet (#3). Turn a validated content set into the §8 file layout:
-   manifest, per-domain files, `all.json.gz`, checksums, changelog, and per-build snapshots, with
-   deterministic key ordering so a byte diff is a semantic diff.
+3. **`build-artifact.ts`** — done (#3). Turns a validated content set into the §8 file layout:
+   manifest, per-domain files (courses, assessments and credentials emitted in every domain they
+   span), `all.json.gz`, checksums, changelog and `feed.json` diffed against the previous artifact,
+   and the per-build snapshot, with deterministic ordering so a byte diff is a semantic diff. It
+   reproduces Appendix B byte for byte from the seed's source entries, and never mints an id.
 
 Then: publish `@ecollective/knowledge-graph` to a registry (an owner action: the `@ecollective`
 scope is not this organisation's namespace on GitHub Packages, so #2 needs the owner's decision on
