@@ -3,6 +3,24 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## 0.4.0 — unreleased
+
+### Added
+
+- `evidence`: one shape for evidence aggregates, `evidence/v1` (SPEC §10, EKG-SPEC-169, the
+  shape DIY Degree publishes live), with `evidenceReport`, `evidenceNode`, `evidenceResource`,
+  `evidenceWindow`, `EVIDENCE_SCHEMA_VERSION`, `EVIDENCE_K`, `EVIDENCE_LICENSE` and
+  `validateEvidenceReport` (V-33: the k floor on every row, the row count, uniqueness, the window;
+  `publisher` and `license` missing or the `licence` spelling are warnings through 0.4.x and
+  errors from 0.5.0; EKG-SPEC-170). Every object is strict, so no free text or identifier can ride
+  along (EKG-SPEC-68). EKG-OQ-11 resolved; the 0.1 example's field names are withdrawn (#21).
+
+### Changed
+
+- `SCHEMA_VERSION` is `0.4.0`; the Appendix B and §3.10 fixtures and the artifact examples say so.
+- `effectiveness.window` in a commons resource record accepts a date or a datetime, as the
+  publisher's file states it.
+
 ## 0.3.0 — 2026-09-23
 
 The 0.3.0 additions, one change per pull request

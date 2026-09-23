@@ -59,7 +59,8 @@ export const effectiveness = z.object({
   publisher: z.string().min(1),
   learners: z.number().int().min(50, 'An effectiveness aggregate describes at least k = 50 distinct learners (EKG-SPEC-69) (V-01)'),
   firstAttemptPassPct: z.number().int().min(0).max(100).optional(),
-  window: z.object({ from: z.iso.date().optional(), to: z.iso.date() }),
+  /** A date or a datetime, as the publisher's window states it (§10). */
+  window: z.object({ from: z.union([z.iso.date(), z.iso.datetime()]).optional(), to: z.union([z.iso.date(), z.iso.datetime()]) }),
   importedAt: z.iso.datetime(),
 });
 export type Effectiveness = z.infer<typeof effectiveness>;

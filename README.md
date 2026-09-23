@@ -11,8 +11,9 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.3 draft specification; package 0.3.0 published on npmjs.com, public
-> (`npm install @ecollective/knowledge-graph@0.3.0`).** The specification is filed and citable.
+> **Status: v0.4 draft specification; package 0.3.0 published on npmjs.com, public
+> (`npm install @ecollective/knowledge-graph@0.3.0`), 0.4.0 unreleased.** The specification is filed
+> and citable.
 > `schema.ts` and `validate.ts` exist with
 > tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
 > Consumers pin the exact version (EKG-SPEC-82). Nothing here is frozen.

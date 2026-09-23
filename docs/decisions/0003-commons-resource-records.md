@@ -88,9 +88,28 @@ the comment window waived, as for v0.2 (decision record 0002, waiver).
   the audience block and the quality summary as canonical fields.
 - 0.3.0 is a minor release; consumers repin at their own pace, and a 0.2 consumer keeps working.
 
+## Addendum, 2026-09-23: #21, one shape for evidence aggregates (0.4.0)
+
+The owner asked for #21 too. §10's example (`learnersN`, fractional rates, `resources[].ekgId`,
+a `{kind, start, end}` window) and the only live implementation, DIY Degree's `evidence/v1`
+(`learners`, whole percents, `resources[].resourceEkgId`, `{from|null, to}`), disagreed field for
+field; Open Degree's evidence page read both and the commons read the live one. Decision: the
+live shape is the specification's (EKG-SPEC-169), because whole percents are what EKG-SPEC-69
+already said and because the only file in the world is that one; `publisher` and `license` are
+required (a reader has only the URL otherwise, and the commons stores the publisher), with the
+live file's missing `publisher` and `licence` spelling reported as warnings through 0.4.x and
+errors from 0.5.0 so nothing breaks on the day. Every object is strict so no free text can ride
+along (EKG-SPEC-68). The package's `validateEvidenceReport` (V-33) is what both sides run
+(EKG-SPEC-170). Additive: a new schema, a validator, one new rule reaching only evidence files;
+0.4.0. *Rejected:* keeping the 0.1 example and asking DIY Degree to change everything (it would
+break the two readers for a spelling preference); accepting both shapes for ever (two shapes is
+the problem).
+
 ## Follow-ups
 
-1. #21: bring §10's evidence-aggregate example in line with the live shape and export a validator.
+1. #21: done in the addendum above; DIY Degree adds `publisher` and `license` to its file
+   (app.diydegree.org#144); Open Degree's evidence page and the commons switch to
+   `validateEvidenceReport`.
 2. app.opendegree.org: publish `resources/` per concept (its #14) and import the platform bundle
    (its #19).
 3. www.opendegree.org: the two pages (its #23 follow-up).
@@ -104,3 +123,4 @@ the comment window waived, as for v0.2 (decision record 0002, waiver).
 | `platforms` collection | #28 | #35 | EKG-SPEC-160, 161 | — | 2026-09-23 |
 | Commons resource records | #29 | #36 | EKG-SPEC-162 to 168; EKG-OQ-11 | V-31, V-32 | 2026-09-23 |
 | `v0.3.0` tag | — | — | — | — | 2026-09-23, on the merge of the release notes; published through trusted publishing |
+| Evidence aggregates, one shape (addendum) | #21 | — | EKG-SPEC-169, 170; EKG-OQ-11 resolved; 97 amended | V-33 | pending |

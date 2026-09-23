@@ -1,14 +1,15 @@
-# eCollective Knowledge Graph Specification, v0.3 draft
+# eCollective Knowledge Graph Specification, v0.4 draft
 
-> Status: **v0.3 draft**: v0.2 (adopted in
+> Status: **v0.4 draft**: v0.2 (adopted in
 > [`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md),
-> published as package 0.2.2) plus the 0.3.0 additions landing change by change
-> ([`docs/decisions/0003-commons-resource-records.md`](docs/decisions/0003-commons-resource-records.md)).
+> published as package 0.2.2), the 0.3.0 additions
+> ([`docs/decisions/0003-commons-resource-records.md`](docs/decisions/0003-commons-resource-records.md),
+> published as 0.3.0), and the 0.4.0 addition of one evidence-aggregate shape (the addendum to 0003).
 > This document is the contract three products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
 > stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered, and a
 > requirement amended in 0.2.0 says so in place.
 >
-> Filed 2026-09-05; v0.2 from 2026-09-17; v0.3 from 2026-09-23. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
+> Filed 2026-09-05; v0.2 from 2026-09-17; v0.3 and v0.4 from 2026-09-23. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
 > [`docs/decisions/0001-dedicated-framework-repo.md`](docs/decisions/0001-dedicated-framework-repo.md).
 
 ## 1. Purpose and scope
@@ -468,8 +469,8 @@ A **commons resource record** is the artifact resource of §3.6 (every field; `e
 An **Effectiveness** entry is `{ publisher, learners, firstAttemptPassPct ?, window: { from ?, to },
 importedAt }`: the publishing product, the number of distinct learners (at least k = 50,
 EKG-SPEC-69), the whole-percent first-attempt pass rate, the window's dates, and when the commons
-imported it. This is the shape DIY Degree publishes live and the commons reads; §10's example
-still differs from it, which EKG-OQ-11 tracks. In a commons record the resource's own `coverage`
+imported it: the per-resource row of an `evidence/v1` file (§10, EKG-SPEC-169) with the publisher
+and the import time added. In a commons record the resource's own `coverage`
 (§3.6) SHOULD be the union of its `outcomes[].coverage`; the per-concept lists are authoritative.
 
 **EKG-SPEC-162** The commons publishes its resource records per concept, at `resources/<ULID>.json`
@@ -513,7 +514,7 @@ the build are illustrative.
 
 ```json
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "buildId": "c4d1e9a0b7f2c3d4e5f60718293a4b5c6d7e8f90",
   "generatedAt": "2026-09-23T02:00:00Z",
   "outcome": "ekg:outcome:01JBX0DEFNTERMS00000000000",
@@ -910,7 +911,7 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 
 ```json
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "artifactVersion": "1.0.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
@@ -950,7 +951,7 @@ complete file is Appendix B):
 
 ```jsonc
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "buildId": "8f3c…",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": { "ekgId": "ekg:domain:01J…", "slug": "geometry", "type": "domain", "title": "Geometry",
@@ -1321,32 +1322,52 @@ percent; durations to the nearest minute.
 anyone else may use them without condition.
 
 **EKG-SPEC-71** Cadence is weekly. Each file states its window explicitly. Windows are whole weeks,
-Monday to Sunday UTC, plus an all-time rollup.
+Monday to Sunday UTC, plus an all-time rollup, whose `window.from` is `null`.
 
-Shape:
+**EKG-SPEC-169** An aggregate file has exactly one shape, `evidence/v1`, the package's
+`evidenceReport`: `schemaVersion: "evidence/v1"`; `publisher`, the product that published it;
+`license: "CC0-1.0"` (EKG-SPEC-106); `k`, at least 50; `window` (`from`, a date or datetime or
+`null` for the rollup; `to`); `generatedAt`; `nodesConsidered` and `nodesPublished` (how many
+nodes had any activity and how many cleared k; never a figure that lets a suppressed value be
+inferred, EKG-SPEC-72); and `nodes`, each `{ ekgId, learners, firstAttemptPassPct, masteryPct,
+medianMinutesToMastery, resources[] }` with `resources[]` of `{ resourceEkgId, learners,
+firstAttemptPassPct }`. Percentages are whole numbers from 0 to 100 (EKG-SPEC-69) or `null` when
+nobody was measured; minutes are whole. Every object is closed: a field this section does not name
+is a validation error, which is how "no free text, no identifier" (EKG-SPEC-68) is enforced.
+*Added in 0.4.0, resolving EKG-OQ-11: this is the shape DIY Degree publishes live and the commons
+reads; the 0.1 example's `learnersN`, fractional rates and `resources[].ekgId` are withdrawn.
+`publisher` and `license` are required; a 0.4 validator reports their absence, and the older
+`licence` spelling, as warnings, and treats them as errors from 0.5.0.*
 
 ```json
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "evidence/v1",
   "publisher": "diydegree",
   "license": "CC0-1.0",
-  "window": { "kind": "week", "start": "2026-08-31", "end": "2026-09-06" },
   "k": 50,
+  "window": { "from": "2026-08-31", "to": "2026-09-06" },
   "generatedAt": "2026-09-07T02:00:00Z",
+  "nodesConsidered": 12,
+  "nodesPublished": 1,
   "nodes": [
     {
-      "ekgId": "ekg:outcome:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
-      "learnersN": 412,
-      "firstAttemptPassRate": 0.61,
-      "masteryRate": 0.88,
+      "ekgId": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+      "learners": 412,
+      "firstAttemptPassPct": 61,
+      "masteryPct": 88,
       "medianMinutesToMastery": 47,
       "resources": [
-        { "ekgId": "ekg:resource:01JBX…", "learnersN": 210, "firstAttemptPassRate": 0.68 }
+        { "resourceEkgId": "ekg:resource:01JBXKHANACADEMY0000000000", "learners": 210, "firstAttemptPassPct": 68 }
       ]
     }
   ]
 }
 ```
+
+**EKG-SPEC-170** A publisher MUST validate an aggregate file with the package's
+`validateEvidenceReport` before publishing it and MUST NOT publish a file that fails (V-01, V-33).
+A consumer MUST validate a file before reading it and MUST ignore a file that fails, rather than
+read the rows that look right. The validator holds the k floor on every row (EKG-SPEC-69, -72).
 
 **EKG-SPEC-72** A per-resource aggregate is itself subject to k ≥ 50; a resource used by fewer than
 50 learners in the window is omitted, not zeroed. Suppression MUST be by omission, and a consumer
@@ -1401,12 +1422,14 @@ any violation (EKG-SPEC-56).
 | V-30 | An outcome's alignment never names a `program_classification` framework, and one that names an `exam_outline` framework carries `relation` `narrower` or `related` (EKG-SPEC-141/142); the kind comes from the registry. Also run over bundle outcomes. | added 0.2.0 |
 | V-31 | Commons resource file, open layer: every record's `state` is `provisional` or `published`, and no record carries a registered-layer field (`qualityBreakdown`) (EKG-SPEC-163/164). | added 0.3.0 |
 | V-32 | Commons resource file: every record names the file's `outcome` in its `outcomes`; records are sorted by `ekgId` and unique; V-18 runs across the file's records (EKG-SPEC-162). | added 0.3.0 |
+| V-33 | Evidence file only: every node and every resource row describes at least `k` learners (EKG-SPEC-69/72); `nodesPublished` matches the rows; no node or resource appears twice; the window is ordered; `publisher` and `license` are present (a warning through 0.4.x, an error from 0.5.0; EKG-SPEC-169). | added 0.4.0 |
 
 V-25 to V-28 apply to import bundles (§9.7) and are run by the commons importer (EKG-SPEC-129). A
 publisher's build and a consumer's import never see a bundle, so EKG-SPEC-74 is unchanged by them.
 V-29 and V-30 reach only fields no 0.1 content has (`segments`, and alignments to frameworks
 registered in 0.2.0), so existing conformant content cannot fail them. V-31 and V-32 reach only
-the commons' resource files (§3.10), which the package's `validateCommonsResourceList` checks.
+the commons' resource files (§3.10), which the package's `validateCommonsResourceList` checks;
+V-33 only evidence files (§10), which `validateEvidenceReport` checks.
 
 **EKG-SPEC-75** V-03's cycle check runs over the whole graph, not per domain. A per-domain
 coherence view ignores prerequisites outside the domain when it computes layers, which is correct
@@ -1514,7 +1537,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-94** Follows `supersededBy` transitively to depth 8 on every read, and rewrites its own records atomically on a merge (FR-EKG-09/10).
 - [ ] **EKG-SPEC-95** Labels every non-`adopted` node in every surface, including public pages (FR-EKG-06).
 - [ ] **EKG-SPEC-96** Exposes `provenance` and the upstream `buildId` in its API and UI (FR-EKG-05).
-- [ ] **EKG-SPEC-97** Contributes only through the four channels of §9.1, by bot pull request as `diy-degree-curation`, under CC BY-SA 4.0; publishes aggregates only above k = 50, under CC0 (FR-EKG-07/11).
+- [ ] **EKG-SPEC-97** Contributes only through the four channels of §9.1, by bot pull request as `diy-degree-curation`, under CC BY-SA 4.0; publishes aggregates only above k = 50, under CC0, in the `evidence/v1` shape validated before publishing (EKG-SPEC-169/170; FR-EKG-07/11).
 - [ ] **EKG-SPEC-98** Never contributes learner work or personal data through any channel (FR-EKG-12).
 - [ ] **EKG-SPEC-99** Renders attribution for Open Degree-derived definitions and for every resource (FR-EKG-13).
 - [ ] **EKG-SPEC-114** Enforces the audience ceiling of EKG-SPEC-111 for every learner under 18 from the artifact's `audience` block, holds any stricter rating of its own as an overlay, and never serves an `unrated` resource as a minor's primary (decision record 0008 there).
@@ -1586,7 +1609,7 @@ as training data, and no term of this specification may be read to grant any rig
 | **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. Is that sufficient, or does the owner want the positioning revisited? (DIY Degree's OQ-14.) | InstructOS integration work. |
 | **EKG-OQ-8** | Is k = 50 the right threshold? It is conservative, and it means a new node publishes no evidence for a long time. Lowering it is a privacy decision, not an engineering one. | Nothing yet; revisit with real volume. |
 | **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? **Resolved 2026-09-23:** the owner is the only arbiter for the moment, for content as for the schema; the appeal path is an issue in this repository (`GOVERNANCE.md` §Roles). When a governance body exists, this changes. | Nothing now. |
-| **EKG-OQ-11** | §10's evidence-aggregate example (`learnersN`, fractions, `resources[].ekgId`) and the only live implementation, DIY Degree's `evidence/v1` (`learners`, whole percents, `resources[].resourceEkgId`, a `{from|null, to}` window), disagree field for field; the commons reads the live shape and §3.10's Effectiveness follows it. To reconcile in §10 and give the aggregate a validator (issue #21). | A validator for evidence aggregates; Open Degree's evidence page reads both shapes meanwhile. |
+| **EKG-OQ-11** | **Resolved 2026-09-23 (0.4.0):** §10 has one shape, `evidence/v1` (EKG-SPEC-169), the one DIY Degree publishes live, and the package validates it (`validateEvidenceReport`, V-33, EKG-SPEC-170). `publisher` and `license` are required with a warning-only period through 0.4.x. Issue #21. | Nothing now. |
 | **EKG-OQ-10** | Enum growth deferred to the next major (the v0.2 proposal's Change J): `audio`, `course` and `paper` as resource `kind` values, and `teacher` as a provenance `source`. Adding an enum value breaks a 0.1 validator (EKG-SPEC-78 covers unknown fields, not unknown values), so this waits for EKG-SPEC-79's sign-off and window. Until then `subKind` carries the refinement and `source: diydegree` with a product-side recommender record carries a teacher's authorship. | The next major release. |
 
 ---
@@ -1779,7 +1802,7 @@ the complete Markdown. Arrays are in the order EKG-SPEC-52 requires, and the pac
 
 ```json
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": {
