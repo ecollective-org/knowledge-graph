@@ -12,6 +12,9 @@ All notable changes to `@ecollective/knowledge-graph`. The format follows
   decided by the owner on 2026-09-23 and published on Open Degree's governance page. `SPEC.md`
   §15 marks EKG-OQ-2 resolved and EKG-OQ-7 resolved (posture (a), InstructOS's decision record
   0013); §13.1 ticks EKG-SPEC-88. No package change.
+- The repository is public (2026-09-23). `GOVERNANCE.md` no longer suggests a private issue for a
+  conduct concern; the next publish carries an npm provenance attestation, which `publish.yml`
+  switches on for a public repository.
 
 ## 0.4.1 — 2026-09-23
 

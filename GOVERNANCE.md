@@ -141,5 +141,6 @@ point of the process; personal attacks, harassment, and bad-faith participation 
 in removal by the arbiter.
 
 A formal code of conduct will be adopted alongside Open Degree's when its contributor base grows;
-until then, the paragraph above is the whole of it, and the arbiter is where a concern goes. Report
-by opening a private issue or contacting the arbiter directly.
+until then, the paragraph above is the whole of it, and the arbiter is where a concern goes. This
+repository is public, so its issues are too; report a concern about a person to the arbiter
+directly rather than in an issue.
