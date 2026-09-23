@@ -3,7 +3,11 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.4.0 — unreleased
+## 0.4.0 — 2026-09-23
+
+One addition, from the addendum to `docs/decisions/0003-commons-resource-records.md`: the evidence
+aggregate shape (#21). Additive: a 0.3 artifact, bundle and commons file validate unchanged.
+Published on npmjs.com through trusted publishing.
 
 ### Added
 
