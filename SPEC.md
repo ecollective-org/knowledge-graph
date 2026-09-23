@@ -442,6 +442,108 @@ entities exactly as to graph entities, and V-02 applies to their references (`in
 `requiredOfferings`, `outcomeMappings[].outcome`). The package's `validateGraph` accepts them in
 source mode, beside graph entities or alone, for that purpose.
 
+### 3.10 Commons resource records
+
+A resource in the graph artifact is a pointer with metadata (§3.6, §8.3). The commons enriches
+it: which concepts it teaches and how well, what raters and learners made of it, whether its link
+still answers, and where it stands in review. A consumer that renders "free ways to learn this"
+or filters a list by audience needs that enriched row, so its public shape is pinned here as §3.9
+pins the reference entities. *Added in 0.3.0.*
+
+A **commons resource record** is the artifact resource of §3.6 (every field; `ekgId` and
+`provenance` required; `audience` and the 0.2 fields included) plus:
+
+| Field | Type | Layer | Notes |
+| --- | --- | --- | --- |
+| `description` | `string` ? | open | |
+| `previousUrls` | URL[] ? (`[]`) | open | URLs the resource was known by; its identity survives a move (EKG-SPEC-25) |
+| `priceNote` | `string` ? | open | a sentence for people, never a price as a fact |
+| `outcomes` | `{ outcome: ref → Outcome, coverage: string[] ? (`[]`), rankHint: integer ? }[]` | open | the concepts it teaches, minimum 1; `coverage` as EKG-SPEC-12, per concept |
+| `state` | `pending` \| `provisional` \| `published` \| `retired` | open | the record's own lifecycle; EKG-SPEC-163 |
+| `linkStatus` | `ok` \| `failing` ? | open | the recurring link check (EKG-SPEC-40); a hidden resource is not published |
+| `quality` | `{ mean: 1–5 ?, n: integer, humanN: integer ?, floorCleared: boolean ? }` ? | open | the quality summary; EKG-SPEC-164 |
+| `effectiveness` | Effectiveness[] ? (`[]`) | open | the products' evidence aggregates; EKG-SPEC-165 |
+| `qualityBreakdown` | `{ correctness, coverage, clarity, efficiency, accessibility, trust }`, each 1–5 ? | **registered** | the per-dimension means; never in the open artifact (V-31) |
+
+An **Effectiveness** entry is `{ publisher, learners, firstAttemptPassPct ?, window: { from ?, to },
+importedAt }`: the publishing product, the number of distinct learners (at least k = 50,
+EKG-SPEC-69), the whole-percent first-attempt pass rate, the window's dates, and when the commons
+imported it. This is the shape DIY Degree publishes live and the commons reads; §10's example
+still differs from it, which EKG-OQ-11 tracks. In a commons record the resource's own `coverage`
+(§3.6) SHOULD be the union of its `outcomes[].coverage`; the per-concept lists are authoritative.
+
+**EKG-SPEC-162** The commons publishes its resource records per concept, at `resources/<ULID>.json`
+under its prefix (EKG-SPEC-115), where `<ULID>` is the outcome's `ekgId` ULID, so that a rename
+never moves the file (EKG-SPEC-20). The file is `{ schemaVersion, buildId, generatedAt, outcome,
+records[] }`, listed in the commons' `checksums.json` (EKG-SPEC-50); `records` are sorted by
+`ekgId` and unique (EKG-SPEC-52), and every record names the file's `outcome` in its `outcomes`
+(V-32). One `ekgId` is one resource across the graph artifact and every commons file it appears
+in (EKG-SPEC-25, V-18).
+
+**EKG-SPEC-163** A commons record's `state` is one of `pending` (received, not yet reviewed, not
+public), `provisional` (published ahead of review, labelled as such), `published` (reviewed) and
+`retired`. None of these is a shared lifecycle token (EKG-SPEC-29), and a record has no `status`.
+The open artifact carries `provisional` and `published` records only (V-31). A consumer that
+presents a `provisional` record MUST label it as not yet reviewed (EKG-SPEC-30 applies to it), and
+MUST drop a record that no longer appears in the artifact on its next import.
+
+**EKG-SPEC-164** `quality` summarises the ratings the commons holds for the resource: `mean` is the
+mean over the six rubric dimensions across raters and product aggregates, from 1 to 5, and is
+absent while nothing has been rated; `n` is the number of ratings behind it and `humanN` how many
+were human; `floorCleared` says the automated floor of the producer's proposal was met, which is
+a judgement, not a rating, and a consumer MUST NOT present it as one. A consumer MAY render "not
+yet rated" below a count of its choosing. The per-dimension means are the registered layer
+(`qualityBreakdown`) and MUST NOT appear in the open artifact (V-31).
+
+**EKG-SPEC-165** `effectiveness` entries are the evidence aggregates of §10 as the commons imported
+them: k ≥ 50 and whole percents (EKG-SPEC-69), CC0 (EKG-SPEC-106), advisory (EKG-SPEC-73). A
+consumer MAY rank on them and MUST NOT gate on them.
+
+**EKG-SPEC-166** The record's `audience` block is the one a consumer reads for the ceiling of
+EKG-SPEC-111 and for filtering a list by audience. A consumer MAY hold a stricter overlay and MUST
+NOT publish a looser one (EKG-SPEC-112).
+
+**EKG-SPEC-167** A consumer of the commons' resource records MUST validate every file against V-01,
+V-18, V-31 and V-32 and MUST NOT render a record from a file that fails; the commons MUST run the
+same rules before it publishes a file.
+
+Example: the Appendix B Khan Academy resource as a commons record for `define-geometric-terms`.
+The resource, the outcome and the evidence statement are real; the ratings, the aggregate and
+the build are illustrative.
+
+```json
+{
+  "schemaVersion": "0.3.0",
+  "buildId": "c4d1e9a0b7f2c3d4e5f60718293a4b5c6d7e8f90",
+  "generatedAt": "2026-09-23T02:00:00Z",
+  "outcome": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+  "records": [
+    { "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000", "title": "Khan Academy, High School Geometry",
+      "url": "https://www.khanacademy.org/math/geometry", "kind": "video", "cost": "free",
+      "provider": "Khan Academy", "modality": "watch", "language": "en", "hasCaptions": true,
+      "license": "CC BY-NC-SA 3.0 US", "attributionText": "Khan Academy, High School Geometry (CC BY-NC-SA 3.0 US)",
+      "embedPolicy": "link-only",
+      "coverage": ["Writes a definition of each term that a peer can use to decide whether a given figure is an example."],
+      "lastVerifiedAt": "2026-09-22T00:00:00Z",
+      "platformId": "ekg:platform:01JBXP7ATF0RMKHAN000000000",
+      "audience": { "rating": "all", "descriptors": [],
+        "basis": { "automated": { "modelId": "claude-sonnet-5", "promptVersion": "audience-v1",
+          "at": "2026-09-16T02:00:00Z", "signals": ["title", "captions", "provider_flag"] },
+          "human": { "count": 2, "lastAt": "2026-09-16T15:20:00Z" } },
+        "confidence": 0.9, "disputes": 0, "version": 2 },
+      "outcomes": [ { "outcome": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+        "coverage": ["Writes a definition of each term that a peer can use to decide whether a given figure is an example."],
+        "rankHint": 1 } ],
+      "state": "published", "linkStatus": "ok",
+      "quality": { "mean": 4.2, "n": 7, "humanN": 5, "floorCleared": true },
+      "effectiveness": [ { "publisher": "diydegree", "learners": 210, "firstAttemptPassPct": 68,
+        "window": { "from": "2026-08-31", "to": "2026-09-06" }, "importedAt": "2026-09-07T02:10:00Z" } ],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } }
+  ]
+}
+```
+
 ## 4. Identifiers
 
 Two identifiers per entity, with different jobs. The `slug` is for humans and URLs and changes; the
@@ -1297,11 +1399,14 @@ any violation (EKG-SPEC-56).
 | V-28 | Bundle only: every proposed resource carries `license` and an `embedPolicy` other than `unknown`; every proposed reference item carries `retrievedAt` and a URL (EKG-SPEC-125). | added 0.2.0 |
 | V-29 | Every outcome listed in a course's `segments[]` appears in that course's `outcomes` (EKG-SPEC-135). Also run over bundle courses. | added 0.2.0 |
 | V-30 | An outcome's alignment never names a `program_classification` framework, and one that names an `exam_outline` framework carries `relation` `narrower` or `related` (EKG-SPEC-141/142); the kind comes from the registry. Also run over bundle outcomes. | added 0.2.0 |
+| V-31 | Commons resource file, open layer: every record's `state` is `provisional` or `published`, and no record carries a registered-layer field (`qualityBreakdown`) (EKG-SPEC-163/164). | added 0.3.0 |
+| V-32 | Commons resource file: every record names the file's `outcome` in its `outcomes`; records are sorted by `ekgId` and unique; V-18 runs across the file's records (EKG-SPEC-162). | added 0.3.0 |
 
 V-25 to V-28 apply to import bundles (§9.7) and are run by the commons importer (EKG-SPEC-129). A
 publisher's build and a consumer's import never see a bundle, so EKG-SPEC-74 is unchanged by them.
 V-29 and V-30 reach only fields no 0.1 content has (`segments`, and alignments to frameworks
-registered in 0.2.0), so existing conformant content cannot fail them.
+registered in 0.2.0), so existing conformant content cannot fail them. V-31 and V-32 reach only
+the commons' resource files (§3.10), which the package's `validateCommonsResourceList` checks.
 
 **EKG-SPEC-75** V-03's cycle check runs over the whole graph, not per domain. A per-domain
 coherence view ignores prerequisites outside the domain when it computes layers, which is correct
@@ -1443,6 +1548,7 @@ content as adopted. It need do nothing else, and it needs nobody's permission.
 - [ ] **EKG-SPEC-132** Answers every bundle with the report of EKG-SPEC-127 and records each rejection with a §9.6 reason.
 - [ ] **EKG-SPEC-133** Publishes reference entities under `https://app.opendegree.org/api/commons/v1/` only, never in a graph domain file (EKG-SPEC-115), with an explicit licence on every record (EKG-SPEC-119).
 - [ ] **EKG-SPEC-134** Never stores learner data (EKG-SPEC-90 applies to it as to Open Degree) and never publishes a rater's or a contributor's personal data.
+- [ ] **EKG-SPEC-168** Publishes its resource records per concept in the shape of §3.10, the open layer only, and runs V-01, V-18, V-31 and V-32 over every file before it publishes (EKG-SPEC-167).
 
 ## 14. Licensing
 
@@ -1480,6 +1586,7 @@ as training data, and no term of this specification may be read to grant any rig
 | **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. Is that sufficient, or does the owner want the positioning revisited? (DIY Degree's OQ-14.) | InstructOS integration work. |
 | **EKG-OQ-8** | Is k = 50 the right threshold? It is conservative, and it means a new node publishes no evidence for a long time. Lowering it is a privacy decision, not an engineering one. | Nothing yet; revisit with real volume. |
 | **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? **Resolved 2026-09-23:** the owner is the only arbiter for the moment, for content as for the schema; the appeal path is an issue in this repository (`GOVERNANCE.md` §Roles). When a governance body exists, this changes. | Nothing now. |
+| **EKG-OQ-11** | §10's evidence-aggregate example (`learnersN`, fractions, `resources[].ekgId`) and the only live implementation, DIY Degree's `evidence/v1` (`learners`, whole percents, `resources[].resourceEkgId`, a `{from|null, to}` window), disagree field for field; the commons reads the live shape and §3.10's Effectiveness follows it. To reconcile in §10 and give the aggregate a validator (issue #21). | A validator for evidence aggregates; Open Degree's evidence page reads both shapes meanwhile. |
 | **EKG-OQ-10** | Enum growth deferred to the next major (the v0.2 proposal's Change J): `audio`, `course` and `paper` as resource `kind` values, and `teacher` as a provenance `source`. Adding an enum value breaks a 0.1 validator (EKG-SPEC-78 covers unknown fields, not unknown values), so this waits for EKG-SPEC-79's sign-off and window. Until then `subKind` carries the refinement and `source: diydegree` with a product-side recommender record carries a teacher's authorship. | The next major release. |
 
 ---

@@ -22,6 +22,17 @@ proposal collection (#28) and the commons' resource records (#29). Additive: a 0
   requires `retrievedAt` and `url` on a platform proposal. An unknown key under `proposals` is now
   a V-01 warning naming the key (EKG-SPEC-161), not a silent drop.
 
+- `commons`: the commons' resource records (SPEC §3.10; EKG-SPEC-162 to EKG-SPEC-167; #29):
+  `commonsResource` (the §3.6 artifact resource plus `outcomes[]`, `state`, `linkStatus`,
+  `quality`, `effectiveness[]`, `previousUrls`, `priceNote`, `description`, and the registered
+  `qualityBreakdown`), `commonsResourceList` (the per-concept file `resources/<ULID>.json`),
+  `validateCommonsResourceList` with V-31 (open layer: `provisional` or `published` only, no
+  registered field) and V-32 (every record names the file's outcome; sorted, unique; V-18 across
+  the file), `COMMONS_PATHS`, `COMMONS_STATES`, `OPEN_COMMONS_STATES`, `LINK_STATUSES`,
+  `QUALITY_DIMENSIONS`, `qualitySummary`, `qualityBreakdown`, `effectiveness`,
+  `resourceOutcomeLink`. The commons' obligation EKG-SPEC-168. EKG-OQ-11 records the §10 aggregate
+  shape mismatch (#21). Fixture: the specification's example, `test/fixtures/commons-resources-geometry.json`.
+
 ### Changed
 
 - `SCHEMA_VERSION` is `0.3.0`; the Appendix B fixture and the artifact examples say so.
