@@ -3,6 +3,13 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## Unreleased
+
+### Changed
+
+- `GOVERNANCE.md` states that `opendegree-commons`, operated by the publisher, has no standing
+  another product's bot lacks: its proposals are reviewed like any other (#24).
+
 ## 0.2.2 — 2026-09-23
 
 Published through npm trusted publishing (OIDC), with no token anywhere; the workflow's first
