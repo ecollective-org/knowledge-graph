@@ -135,6 +135,34 @@ describe('buildArtifact (SPEC §8, #3)', () => {
     expect(deriveFeed([first.domains[0]!.file], [first.domains[0]!.file], 'x', BUILD.generatedAt)).toEqual([]);
   });
 
+  it('treats a redeploy of the same commit as that build again, byte for byte, never as a diff against itself (EKG-SPEC-171)', async () => {
+    const first = built(await buildArtifact(source(), BUILD));
+    const previous = { manifest: first.manifest, domains: { geometry: first.domains[0]!.file }, changelog: first.changelog, feed: first.feed };
+    const again = built(await buildArtifact(source(), { ...BUILD, previous }));
+    expect(again.manifest.previousBuildId).toBeUndefined();
+    expect(again.changelog).toEqual(first.changelog);
+    expect(again.feed).toEqual(first.feed);
+    expect(Object.keys(again.files).sort()).toEqual(Object.keys(first.files).sort());
+    for (const path of Object.keys(first.files)) {
+      if (path.endsWith('all.json.gz')) continue;
+      expect(decoder.decode(again.files[path])).toBe(decoder.decode(first.files[path]));
+    }
+
+    // With a real build behind it, the redeploy keeps that build as previousBuildId and its own zero-change entry.
+    const later = { ...BUILD, buildId: 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678', generatedAt: '2026-09-06T04:12:07Z' };
+    const second = built(await buildArtifact(source(), { ...later, previous }));
+    expect(second.manifest.previousBuildId).toBe(BUILD.buildId);
+    expect(second.changelog).toHaveLength(2);
+    expect(second.feed).toHaveLength(13); // nothing changed; the first build's entries stay
+    const secondPrevious = { manifest: second.manifest, domains: { geometry: second.domains[0]!.file }, changelog: second.changelog, feed: second.feed };
+    const secondAgain = built(await buildArtifact(source(), { ...later, previous: secondPrevious }));
+    expect(secondAgain.manifest.previousBuildId).toBe(BUILD.buildId);
+    expect(secondAgain.changelog).toEqual(second.changelog);
+    expect(secondAgain.feed).toEqual(second.feed);
+    expect(decoder.decode(secondAgain.files['index.json'])).toBe(decoder.decode(second.files['index.json']));
+    expect(decoder.decode(secondAgain.files['checksums.json'])).toBe(decoder.decode(second.files['checksums.json']));
+  });
+
   it('emits a course whose outcomes span domains in every domain file it touches, with crossDomain (EKG-SPEC-136)', async () => {
     const entries = source();
     entries.push(
