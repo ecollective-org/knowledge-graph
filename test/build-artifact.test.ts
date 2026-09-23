@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ARTIFACT_PATHS,
+  SCHEMA_VERSION,
   buildArtifact,
   changelog,
   deriveFeed,
@@ -54,7 +55,7 @@ describe('buildArtifact (SPEC §8, #3)', () => {
     const artifact = built(await buildArtifact(source(), BUILD));
     expect(manifest.safeParse(artifact.manifest).success).toBe(true);
     expect(artifact.manifest).toMatchObject({
-      schemaVersion: '0.2.0', artifactVersion: '1.0.0', buildId: BUILD.buildId, generatedAt: BUILD.generatedAt, publisher: 'opendegree',
+      schemaVersion: SCHEMA_VERSION, artifactVersion: '1.0.0', buildId: BUILD.buildId, generatedAt: BUILD.generatedAt, publisher: 'opendegree',
       license: { content: 'CC BY-SA 4.0', aggregates: 'CC0-1.0' },
       counts: { domains: 1, outcomes: 5, courses: 1, assessments: 1, credentials: 1, resources: 4 },
       changelogPath: 'changelog.json',
@@ -78,7 +79,7 @@ describe('buildArtifact (SPEC §8, #3)', () => {
     const first = built(await buildArtifact(source(), BUILD));
     const second = built(await buildArtifact(source(), BUILD));
     const all = JSON.parse(await gunzip(first.files['all.json.gz']!)) as { schemaVersion: string; buildId: string; domains: unknown[] };
-    expect(all.schemaVersion).toBe('0.2.0');
+    expect(all.schemaVersion).toBe(SCHEMA_VERSION);
     expect(all.buildId).toBe(BUILD.buildId);
     expect(all.domains[0]).toEqual(first.domains[0]!.file);
     for (const path of Object.keys(first.files)) {

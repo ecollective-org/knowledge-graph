@@ -3,10 +3,21 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## Unreleased
+## 0.3.0 — unreleased
+
+The 0.3.0 additions, one change per pull request
+(`docs/decisions/0003-commons-resource-records.md`): the handle rule (#30), a `platforms`
+proposal collection (#28) and the commons' resource records (#29). Additive: a 0.2 artifact and a
+0.2 bundle validate unchanged.
+
+### Added
+
+- SPEC EKG-SPEC-159: the handle character set behind `contributor:<handle>` (§9.3; #30). No
+  package change: `CONTRIBUTOR_IDENTITY_PATTERN` is unchanged and now has prose behind it.
 
 ### Changed
 
+- `SCHEMA_VERSION` is `0.3.0`; the Appendix B fixture and the artifact examples say so.
 - `GOVERNANCE.md` states that `opendegree-commons`, operated by the publisher, has no standing
   another product's bot lacks: its proposals are reviewed like any other (#24).
 

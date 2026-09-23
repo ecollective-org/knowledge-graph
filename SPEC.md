@@ -1,13 +1,14 @@
-# eCollective Knowledge Graph Specification, v0.2 draft
+# eCollective Knowledge Graph Specification, v0.3 draft
 
-> Status: **v0.2 draft**, landing change by change from the adopted v0.2 proposal
-> ([`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md));
-> package 0.2.0, unreleased. No package is published yet. This document is the contract three
-> products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
+> Status: **v0.3 draft**: v0.2 (adopted in
+> [`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md),
+> published as package 0.2.2) plus the 0.3.0 additions landing change by change
+> ([`docs/decisions/0003-commons-resource-records.md`](docs/decisions/0003-commons-resource-records.md)).
+> This document is the contract three products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
 > stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered, and a
 > requirement amended in 0.2.0 says so in place.
 >
-> Filed 2026-09-05; v0.2 from 2026-09-17. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
+> Filed 2026-09-05; v0.2 from 2026-09-17; v0.3 from 2026-09-23. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
 > [`docs/decisions/0001-dedicated-framework-repo.md`](docs/decisions/0001-dedicated-framework-repo.md).
 
 ## 1. Purpose and scope
@@ -807,7 +808,7 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 
 ```json
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "artifactVersion": "1.0.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
@@ -847,7 +848,7 @@ complete file is Appendix B):
 
 ```jsonc
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "buildId": "8f3c…",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": { "ekgId": "ekg:domain:01J…", "slug": "geometry", "type": "domain", "title": "Geometry",
@@ -997,6 +998,13 @@ identities: `diy-degree-curation` (DIY Degree), `instructos-mapping` (InstructOS
 a human actually reviewed the proposal on the contributing side; a bot MUST NOT record itself as a
 human reviewer.
 
+**EKG-SPEC-159** A human producer of an import bundle (§9.7) is identified as `contributor:<handle>`.
+The handle is lowercase ASCII letters, digits and hyphens, beginning with a letter or a digit:
+`^[a-z0-9][a-z0-9-]*$`, which is the package's `CONTRIBUTOR_IDENTITY_PATTERN` applied after the
+prefix. A consumer that mints handles MUST keep them inside that set (it MAY be stricter, as the
+commons is with `[a-z][a-z0-9-]{2,19}`) and MUST treat uniqueness as case-insensitive. A handle is
+an identity, never an email address or a legal name (EKG-SPEC-14).
+
 ### 9.4 Review checklist
 
 An Open Degree maintainer works through this list. Any "no" is a change request or a rejection.
@@ -1074,7 +1082,7 @@ A bundle carries:
 | Field | Notes |
 | --- | --- |
 | `bundleVersion` | the version of this section the bundle follows, semver; `1.x` today |
-| `producer` | `tool`, `toolVersion`, `modelId`, `promptVersion`, `sessionId` (a string, never a person), `producedAt`, and `identity`: a registered product identity (§9.3) or `contributor:<handle>` |
+| `producer` | `tool`, `toolVersion`, `modelId`, `promptVersion`, `sessionId` (a string, never a person), `producedAt`, and `identity`: a registered product identity (§9.3) or `contributor:<handle>`, the handle as EKG-SPEC-159 defines it |
 | `scope` | `subject`, `gradeBand`, `frameworkIds[]`, and `sources[]`, each `{ title, url, license?, retrievedAt }` |
 | `licenseAcceptance` | `graphContent: "CC BY-SA 4.0"` (EKG-SPEC-105) and `referenceContent`, the commons' terms the producer accepts |
 | `references[]` | existing `ekgId`s the bundle relies on, found in the current artifact |
@@ -1653,7 +1661,7 @@ the complete Markdown. Arrays are in the order EKG-SPEC-52 requires, and the pac
 
 ```json
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": {
