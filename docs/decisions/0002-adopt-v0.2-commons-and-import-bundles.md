@@ -210,3 +210,4 @@ permanent from then on.
 | Follow-ups | #4 | #20 | EKG-SPEC-157, 158; 24 amended; EKG-OQ-3 resolved; EKG-OQ-2, 9 flagged | — | 2026-09-17 |
 | `v0.2.0` tag | — | — | — | — | 2026-09-17, on the merge of #20; its publish step failed on the GitHub Packages namespace (#2) |
 | `v0.2.1` published | #2 | #26 | — | — | 2026-09-23: public on npmjs.com under the owner's `ecollective` organisation; no code change since 0.2.0 |
+| `v0.2.2` published | #2 | — | — | — | 2026-09-23: through npm trusted publishing, token deleted; no code change since 0.2.0 |

@@ -1,6 +1,6 @@
 {
   "name": "@ecollective/knowledge-graph",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Zod schemas, ekgId helpers, artifact types and a validator for the eCollective Knowledge Graph (SPEC.md v0.1).",
   "license": "MIT",
   "type": "module",

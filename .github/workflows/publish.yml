@@ -1,17 +1,16 @@
 name: Publish
 
 # On a `v*` tag: verify, check that the tag names the version in package.json, then publish to
-# npmjs.com under the `ecollective` organisation, public, as `publishConfig` in package.json says.
+# npmjs.com, public, under the `ecollective` organisation (`publishConfig` in package.json).
 #
-# Authentication, in two phases (issue #2):
-#  1. First publish: a granular access token scoped to the `@ecollective` scope with
-#     "Read and write (publish and stage)" and "Bypass 2FA", stored as the repository secret
-#     NPM_TOKEN. The owner creates it; nothing here can.
-#  2. Afterwards: trusted publishing (OIDC). Once the package exists, the owner registers this
-#     repository and this workflow file as its trusted publisher on npmjs.com and sets the package
-#     to "Require two-factor authentication and disallow tokens". The `id-token: write` permission
-#     and a current npm are already in place for that; NPM_TOKEN is then revoked and this workflow
-#     needs no secret at all.
+# Authentication is npm trusted publishing (OIDC): this repository and this workflow file are the
+# package's registered trusted publisher on npmjs.com, publishing access there is "Require
+# two-factor authentication and disallow tokens", and no secret is involved (issue #2). The
+# `id-token: write` permission and a current npm (11.5.1 or later) are what npm needs for it.
+#
+# Provenance: under trusted publishing npm attaches a provenance attestation automatically, but
+# only a public repository can carry one, so it is switched off while this repository is private
+# and turns on by itself when the repository becomes public.
 
 on:
   push:
@@ -51,7 +50,7 @@ jobs:
       - name: Typecheck, test, build
         run: npm run verify
 
-      - name: Publish
+      - name: Publish (trusted publishing; provenance only from a public repository)
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: ${{ github.event.repository.private == false }}

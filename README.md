@@ -11,8 +11,8 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.2 draft specification; package 0.2.1 published on npmjs.com, public
-> (`npm install @ecollective/knowledge-graph@0.2.1`).** The specification is filed and citable.
+> **Status: v0.2 draft specification; package 0.2.2 published on npmjs.com, public
+> (`npm install @ecollective/knowledge-graph@0.2.2`).** The specification is filed and citable.
 > `schema.ts` and `validate.ts` exist with
 > tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
 > Consumers pin the exact version (EKG-SPEC-82). Nothing here is frozen.
@@ -119,8 +119,9 @@ Three deliverables, in order. All three exist.
    and the per-build snapshot, with deterministic ordering so a byte diff is a semantic diff. It
    reproduces Appendix B byte for byte from the seed's source entries, and never mints an id.
 
-Then: published. `@ecollective/knowledge-graph@0.2.1` is on npmjs.com, public, under the owner's
-`ecollective` organisation (#2); a `v*` tag publishes the next release. The v0.2 changes landed per
+Then: published. `@ecollective/knowledge-graph` is on npmjs.com, public, under the owner's
+`ecollective` organisation (#2); a `v*` tag publishes the next release through npm trusted
+publishing, with no token. The v0.2 changes landed per
 issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
 
 ## What each product needs before its next phase
