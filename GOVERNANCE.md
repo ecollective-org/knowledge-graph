@@ -11,7 +11,7 @@ the same person today, and that is stated rather than disguised.
 
 ### Owner and arbiter
 
-One person, currently the eCollective owner. The arbiter:
+One person, currently the eCollective owner, `jmcwilliam` on GitHub. The arbiter:
 
 - breaks ties when the three products disagree;
 - approves or rejects a breaking change when consensus is not reached;
@@ -22,6 +22,11 @@ There is no governance body yet. Until one exists, the owner is the arbiter, and
 so plainly rather than implying a committee that does not meet. When a body is formed, its charter
 replaces this section and the arbiter role becomes an appeal, not a first instance.
 
+The same holds for content: a disagreement between an Open Degree maintainer and a consumer's
+curator is arbitrated by the owner, the only arbiter for the moment (`SPEC.md` EKG-OQ-9, decided
+2026-09-23). The appeal path is an issue in this repository naming the entities and the two
+positions.
+
 ### Product maintainers
 
 One named maintainer per consuming product. Each maintainer:
@@ -31,12 +36,16 @@ One named maintainer per consuming product. Each maintainer:
 - keeps their product's row in `SPEC.md` §13 (consumer obligations) honest — including reporting a MUST their product does not yet meet;
 - registers and operates their product's contribution bot identity (`SPEC.md` §9.3).
 
-| Product | Role | Bot identity |
-| --- | --- | --- |
-| Open Degree | Publisher and moderator | — (it is the publisher) |
-| DIY Degree | Importer and contributor | `diy-degree-curation` |
-| InstructOS | Mapper | `instructos-mapping` |
-| Open Degree commons (`app.opendegree.org`) | Importer of bundles, publisher of reference data | `opendegree-commons` |
+| Product | Role | Maintainer | Bot identity |
+| --- | --- | --- | --- |
+| Open Degree | Publisher and moderator | `jmcwilliam` | — (it is the publisher) |
+| DIY Degree | Importer and contributor | `jmcwilliam` | `diy-degree-curation` |
+| InstructOS | Mapper | `jmcwilliam` | `instructos-mapping` |
+| Open Degree commons (`app.opendegree.org`) | Importer of bundles, publisher of reference data | `jmcwilliam` | `opendegree-commons` |
+
+One person holds every maintainer seat today (decided 2026-09-23, "for now"). A breaking change
+therefore has one signatory in practice; the fourteen-day window still applies, because it is
+what gives a future maintainer a say.
 
 ### Open Degree moderators
 
@@ -45,9 +54,11 @@ the only role that may set `status` to `proposed`, `adopted`, or `deprecated` (`
 EKG-SPEC-27). They review inbound contribution pull requests against the checklist in `SPEC.md`
 §9.4, and record a rejection reason from §9.6.
 
-Their identities and their review SLA are an open question (`SPEC.md` EKG-OQ-2). Until it is
-answered, no consumer should build a throughput plan on upstream review, which is why every consumer
-is permitted to serve non-`adopted` content, clearly labelled.
+The only moderator, for now, is the owner, `jmcwilliam` (`SPEC.md` EKG-OQ-2, decided 2026-09-23).
+The review SLA on an inbound bot pull request is not yet published. Until it is, no consumer should
+build a throughput plan on upstream review, which is why every consumer is permitted to serve
+non-`adopted` content, clearly labelled, and why the commons' fast lane exists (`SPEC.md`
+EKG-SPEC-126).
 
 ### Specification editor
 
