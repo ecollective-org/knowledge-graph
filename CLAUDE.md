@@ -46,6 +46,7 @@ through npm trusted publishing; there is no token to keep anywhere.
 │   ├── frameworks.ts                          # the framework registry (§6.2)
 │   ├── reference.ts                           # the commons' reference entities (§3.9)
 │   ├── import-bundle.ts                       # importBundle, validateImportBundle, the report (§9.7)
+│   ├── commons.ts                             # commonsResource, commonsResourceList, validateCommonsResourceList (§3.10)
 │   ├── url.ts                                 # normalizeResourceUrl (EKG-SPEC-25)
 │   ├── build-artifact.ts                      # buildArtifact, stableStringify, diffCounts, deriveFeed (§8)
 │   └── validate.ts                            # validateGraph, validateDomainFile (§11)
