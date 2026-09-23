@@ -19,7 +19,7 @@ importer and contributor), and InstructOS (mapper).
 assessment, or credential. All of that is in `ecollective-org/www.opendegree.org`. See
 `docs/decisions/0001-dedicated-framework-repo.md` for why.
 
-Status: **v0.4 draft specification (`docs/decisions/0002-…` and `0003-…`); package 0.4.0
+Status: **v0.4 draft specification (`docs/decisions/0002-…` to `0004-…`); package 0.4.1
 published on npmjs.com, public, under the `ecollective` organisation.** `schema.ts`, `validate.ts` and `build-artifact.ts`
 exist with tests;
 the builder reproduces Appendix B byte for byte. Publishing is a `v*` tag push (`publish.yml`)

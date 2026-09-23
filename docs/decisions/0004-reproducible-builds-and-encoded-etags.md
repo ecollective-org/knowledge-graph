@@ -77,5 +77,5 @@ as 0.2.1 and 0.2.2 stayed at 0.2.0.
 
 | Change | Issue | Pull request | Requirements | Rules | Merged |
 | --- | --- | --- | --- | --- | --- |
-| Encoded-response `ETag`; reproducible builds; redeploy handling | #22, #23 | #40 | EKG-SPEC-44, 51 amended; 171, 172 added | — | pending |
-| `v0.4.1` tag | — | — | — | — | pending |
+| Encoded-response `ETag`; reproducible builds; redeploy handling | #22, #23 | #40 | EKG-SPEC-44, 51 amended; 171, 172 added | — | 2026-09-23 |
+| `v0.4.1` tag | — | — | — | — | 2026-09-23, on the merge of the release notes; published through trusted publishing |
