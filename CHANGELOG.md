@@ -3,6 +3,17 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## 0.2.2 — 2026-09-23
+
+Published through npm trusted publishing (OIDC), with no token anywhere; the workflow's first
+release that way. No package code changes since 0.2.0.
+
+### Changed
+
+- `publish.yml` authenticates by trusted publishing; the first-release granular token and the
+  `NPM_TOKEN` secret are gone (#2). Provenance attestations attach automatically once the
+  repository is public and are switched off while it is private.
+
 ## 0.2.1 — 2026-09-23
 
 The first published release: `@ecollective/knowledge-graph@0.2.1` on npmjs.com, public, under the
