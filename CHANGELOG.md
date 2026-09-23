@@ -3,6 +3,16 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## Unreleased
+
+### Changed
+
+- `GOVERNANCE.md` publishes Open Degree's review SLA on inbound contribution pull requests (a
+  first response within 7 days, a decision within 14, then an issue here for the arbiter),
+  decided by the owner on 2026-09-23 and published on Open Degree's governance page. `SPEC.md`
+  §15 marks EKG-OQ-2 resolved and EKG-OQ-7 resolved (posture (a), InstructOS's decision record
+  0013); §13.1 ticks EKG-SPEC-88. No package change.
+
 ## 0.4.1 — 2026-09-23
 
 Two amendments from `docs/decisions/0004-reproducible-builds-and-encoded-etags.md`, both catching
