@@ -47,6 +47,11 @@ One person holds every maintainer seat today (decided 2026-09-23, "for now"). A 
 therefore has one signatory in practice; the fourteen-day window still applies, because it is
 what gives a future maintainer a say.
 
+`opendegree-commons` is unusual in one way: Open Degree is both the publisher and the operator of
+that identity. A proposal it opens is reviewed against `SPEC.md` §9.4 exactly as any other
+product's, by a maintainer and never by the bot, and the bot is never a reviewer of record
+(EKG-SPEC-63). Operating the identity confers no standing that another product's bot lacks.
+
 ### Open Degree moderators
 
 Open Degree's own maintainers. They are the human gate on every change to canonical content, and
