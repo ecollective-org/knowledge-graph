@@ -3,11 +3,11 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.4.1 — unreleased
+## 0.4.1 — 2026-09-23
 
 Two amendments from `docs/decisions/0004-reproducible-builds-and-encoded-etags.md`, both catching
 the specification up with what the publisher already does. Patch: no export, field or rule
-changes; `SCHEMA_VERSION` stays `0.4.0`.
+changes; `SCHEMA_VERSION` stays `0.4.0`. Published on npmjs.com through trusted publishing.
 
 ### Changed
 
