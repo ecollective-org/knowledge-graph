@@ -123,4 +123,4 @@ the problem).
 | `platforms` collection | #28 | #35 | EKG-SPEC-160, 161 | — | 2026-09-23 |
 | Commons resource records | #29 | #36 | EKG-SPEC-162 to 168; EKG-OQ-11 | V-31, V-32 | 2026-09-23 |
 | `v0.3.0` tag | — | — | — | — | 2026-09-23, on the merge of the release notes; published through trusted publishing |
-| Evidence aggregates, one shape (addendum) | #21 | — | EKG-SPEC-169, 170; EKG-OQ-11 resolved; 97 amended | V-33 | pending |
+| Evidence aggregates, one shape (addendum) | #21 | #38 | EKG-SPEC-169, 170; EKG-OQ-11 resolved; 71, 97 amended | V-33 | pending |
