@@ -3,10 +3,15 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## Unreleased
+## 0.2.1 — unreleased
+
+The first published release: public on npmjs.com under the `ecollective` organisation. No
+package code changes since 0.2.0.
 
 ### Changed
 
+- `publishConfig` points at `registry.npmjs.org` with public access; the publish workflow uses an
+  `NPM_TOKEN` secret for the first publish and is ready for trusted publishing after it (#2).
 - `GOVERNANCE.md` names `jmcwilliam`, the owner, as the only maintainer of every product and the
   only arbiter for now, for content disputes as for the schema (2026-09-23). `SPEC.md` §15 marks
   EKG-OQ-9 resolved and EKG-OQ-2 partly resolved: the review SLA is still to be published, so

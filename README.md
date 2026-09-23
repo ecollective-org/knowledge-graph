@@ -11,11 +11,12 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.2 draft specification; package code at 0.2.0, tagged, not published.** The
-> specification is filed and citable. `schema.ts` and `validate.ts` exist with
+> **Status: v0.2 draft specification; package code at 0.2.1, publishing to npmjs.com as a public
+> package under the `ecollective` organisation.** The specification is filed and citable.
+> `schema.ts` and `validate.ts` exist with
 > tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
-> Publishing is blocked on the package namespace (#2); until then a consumer pins a packed tarball
-> (`npm pack`) by content, which is conformant. Nothing here is frozen.
+> Until the first publish lands (#2), a consumer pins a packed tarball (`npm pack`) by content,
+> which is conformant. Nothing here is frozen.
 
 ## What this repository is
 
@@ -119,11 +120,10 @@ Three deliverables, in order. All three exist.
    and the per-build snapshot, with deterministic ordering so a byte diff is a semantic diff. It
    reproduces Appendix B byte for byte from the seed's source entries, and never mints an id.
 
-Then: publish `@ecollective/knowledge-graph` to a registry (an owner action: the `@ecollective`
-scope is not this organisation's namespace on GitHub Packages, so #2 needs the owner's decision on
-the package name or the registry first; the tag-triggered publish workflow is in place). The v0.2
-changes land per issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups (changelog layout,
-resource write-back, build retention, the remaining open questions) are #4.
+Then: publish `@ecollective/knowledge-graph` to npmjs.com, public, under the owner's `ecollective`
+organisation (#2; the tag-triggered publish workflow is in place and needs the owner's `NPM_TOKEN`
+secret for the first release, trusted publishing afterwards). The v0.2 changes landed per issue
+(#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
 
 ## What each product needs before its next phase
 

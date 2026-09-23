@@ -1,18 +1,17 @@
 name: Publish
 
 # On a `v*` tag: verify, check that the tag names the version in package.json, then publish to
-# the registry named by `publishConfig.registry` (GitHub Packages). Publishing is an owner
-# action (issue #2); this workflow is how it runs once the owner has decided the namespace.
+# npmjs.com under the `ecollective` organisation, public, as `publishConfig` in package.json says.
 #
-# Known blocker, 2026-09-17 (issue #2): GitHub Packages scopes an npm package to the GitHub
-# account its scope names. `@ecollective` names the GitHub user `ecollective`, which is not this
-# organisation (`ecollective-org`). Until the package is renamed to `@ecollective-org/…`, or the
-# owner chooses another registry, the publish step below fails with a permission error, and that
-# failure is the expected outcome of pushing a tag. Everything before it still runs, so a tag
-# always proves the tagged commit verifies.
-#
-# The package is private, like the repository. A consumer installs it with a token that has
-# `read:packages`; see issue #2 for what each consumer's build needs.
+# Authentication, in two phases (issue #2):
+#  1. First publish: a granular access token scoped to the `@ecollective` scope with
+#     "Read and write (publish and stage)" and "Bypass 2FA", stored as the repository secret
+#     NPM_TOKEN. The owner creates it; nothing here can.
+#  2. Afterwards: trusted publishing (OIDC). Once the package exists, the owner registers this
+#     repository and this workflow file as its trusted publisher on npmjs.com and sets the package
+#     to "Require two-factor authentication and disallow tokens". The `id-token: write` permission
+#     and a current npm are already in place for that; NPM_TOKEN is then revoked and this workflow
+#     needs no secret at all.
 
 on:
   push:
@@ -20,7 +19,7 @@ on:
 
 permissions:
   contents: read
-  packages: write
+  id-token: write
 
 jobs:
   publish:
@@ -34,8 +33,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://npm.pkg.github.com
-          scope: '@ecollective'
+          registry-url: https://registry.npmjs.org
+
+      - name: Use a current npm (trusted publishing needs 11.5.1 or later)
+        run: npm install -g npm@latest && npm --version
 
       - name: The tag must equal the package version (consumers pin by exact version, EKG-SPEC-82)
         run: |
@@ -53,4 +54,4 @@ jobs:
       - name: Publish
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
