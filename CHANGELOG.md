@@ -3,10 +3,10 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.2.1 — unreleased
+## 0.2.1 — 2026-09-23
 
-The first published release: public on npmjs.com under the `ecollective` organisation. No
-package code changes since 0.2.0.
+The first published release: `@ecollective/knowledge-graph@0.2.1` on npmjs.com, public, under the
+`ecollective` organisation. No package code changes since 0.2.0.
 
 ### Changed
 
