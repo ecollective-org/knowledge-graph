@@ -3,12 +3,12 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.3.0 — unreleased
+## 0.3.0 — 2026-09-23
 
 The 0.3.0 additions, one change per pull request
 (`docs/decisions/0003-commons-resource-records.md`): the handle rule (#30), a `platforms`
 proposal collection (#28) and the commons' resource records (#29). Additive: a 0.2 artifact and a
-0.2 bundle validate unchanged.
+0.2 bundle validate unchanged. Published on npmjs.com through trusted publishing.
 
 ### Added
 

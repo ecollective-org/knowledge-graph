@@ -102,5 +102,5 @@ the comment window waived, as for v0.2 (decision record 0002, waiver).
 | --- | --- | --- | --- | --- | --- |
 | Handle rule; 0.3.0 opened; this record | #30 | #34 | EKG-SPEC-159 | — | 2026-09-23 |
 | `platforms` collection | #28 | #35 | EKG-SPEC-160, 161 | — | 2026-09-23 |
-| Commons resource records | #29 | #36 | EKG-SPEC-162 to 168; EKG-OQ-11 | V-31, V-32 | pending |
-| `v0.3.0` tag | — | — | — | — | pending |
+| Commons resource records | #29 | #36 | EKG-SPEC-162 to 168; EKG-OQ-11 | V-31, V-32 | 2026-09-23 |
+| `v0.3.0` tag | — | — | — | — | 2026-09-23, on the merge of the release notes; published through trusted publishing |
