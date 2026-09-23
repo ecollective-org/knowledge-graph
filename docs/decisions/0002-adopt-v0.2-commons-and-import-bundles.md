@@ -179,7 +179,8 @@ amend `GOVERNANCE.md`; the owner is the arbiter and authorised it with the rest 
 1. Owner: the package namespace (issue #2), and the `read:packages` tokens for both consumers'
    builds once a registry exists.
 2. Owner: EKG-OQ-2 (Open Degree's maintainers and their review SLA) and EKG-OQ-9 (arbitration).
-   Flagged, not answered, by this adoption.
+   Flagged, not answered, by this adoption. *2026-09-23: the owner named themself the only
+   maintainer and the only arbiter for now; the review SLA is still to be published.*
 3. `app.diydegree.org`: pin 0.2.0; prefer the artifact's `audience` block over the platform
    default; consume `feed.json`; move the canonical fields out of the overlay lists; deduplicate
    cross-domain courses in the snapshot.

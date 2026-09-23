@@ -3,6 +3,15 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## Unreleased
+
+### Changed
+
+- `GOVERNANCE.md` names `jmcwilliam`, the owner, as the only maintainer of every product and the
+  only arbiter for now, for content disputes as for the schema (2026-09-23). `SPEC.md` §15 marks
+  EKG-OQ-9 resolved and EKG-OQ-2 partly resolved: the review SLA is still to be published, so
+  EKG-SPEC-88 stays unticked.
+
 ## 0.2.0 — 2026-09-17
 
 Implements `SPEC.md` v0.2 draft, one change per pull request
