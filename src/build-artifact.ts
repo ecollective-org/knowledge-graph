@@ -62,7 +62,10 @@ export interface PreviousArtifact {
 export interface BuildOptions {
   /** The publishing repository's commit SHA (EKG-SPEC-44). */
   buildId: string;
-  /** UTC, ISO 8601 with a `Z` suffix (EKG-SPEC-44). */
+  /**
+   * The committer timestamp of the commit `buildId` names, UTC with a `Z` suffix (EKG-SPEC-44);
+   * the builder reads no clock, so the same inputs give the same bytes (EKG-SPEC-171).
+   */
   generatedAt: string;
   publisher?: string;
   /** Default provenance for content that carries none: `sourceRepo` and the build's commit. */
@@ -457,7 +460,12 @@ export async function buildArtifact(entries: readonly SourceEntry[], options: Bu
 
   const previous = parsePrevious(options.previous);
   const previousFiles = [...previous.domains.values()];
-  const changelogEntry: ChangelogEntry = {
+  // A redeploy of the commit the previous artifact already names is that build again (EKG-SPEC-171):
+  // keep its changelog entry, its feed entries and its previousBuildId rather than diff it against itself.
+  const redeploy = previous.manifest?.buildId === buildId;
+  const previousBuildId = redeploy ? previous.manifest?.previousBuildId : previous.manifest?.buildId;
+  const existingEntry = redeploy ? previous.changelog.find((e) => e.buildId === buildId) : undefined;
+  const changelogEntry: ChangelogEntry = existingEntry ?? {
     buildId,
     generatedAt,
     schemaVersion: SCHEMA_VERSION,
@@ -472,15 +480,17 @@ export async function buildArtifact(entries: readonly SourceEntry[], options: Bu
   const changelog: Changelog = [changelogEntry, ...previous.changelog.filter((e) => e.buildId !== buildId)].slice(0, 100);
   files[ARTIFACT_PATHS.changelog] = encoder.encode(stableStringify(changelog));
 
-  const feed: Feed = [
-    ...deriveFeed(
-      built.map((d) => d.file),
-      previousFiles,
-      buildId,
-      generatedAt,
-    ),
-    ...previous.feed.filter((e) => e.buildId !== buildId),
-  ].slice(0, FEED_LIMIT);
+  const feed: Feed = redeploy
+    ? previous.feed
+    : [
+        ...deriveFeed(
+          built.map((d) => d.file),
+          previousFiles,
+          buildId,
+          generatedAt,
+        ),
+        ...previous.feed.filter((e) => e.buildId !== buildId),
+      ].slice(0, FEED_LIMIT);
   files[ARTIFACT_PATHS.feed] = encoder.encode(stableStringify(feed));
 
   const manifest: Manifest = {
@@ -492,7 +502,7 @@ export async function buildArtifact(entries: readonly SourceEntry[], options: Bu
     license,
     counts,
     domains: manifestDomains,
-    ...(previous.manifest?.buildId ? { previousBuildId: previous.manifest.buildId } : {}),
+    ...(previousBuildId ? { previousBuildId } : {}),
     changelogPath: ARTIFACT_PATHS.changelog,
   };
   files[ARTIFACT_PATHS.manifest] = encoder.encode(stableStringify(manifest));

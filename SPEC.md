@@ -4,7 +4,9 @@
 > [`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md),
 > published as package 0.2.2), the 0.3.0 additions
 > ([`docs/decisions/0003-commons-resource-records.md`](docs/decisions/0003-commons-resource-records.md),
-> published as 0.3.0), and the 0.4.0 addition of one evidence-aggregate shape (the addendum to 0003).
+> published as 0.3.0), the 0.4.0 addition of one evidence-aggregate shape (the addendum to 0003),
+> and the 0.4.1 amendments for reproducible builds and content-encoded responses
+> ([`docs/decisions/0004-reproducible-builds-and-encoded-etags.md`](docs/decisions/0004-reproducible-builds-and-encoded-etags.md)).
 > This document is the contract three products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
 > stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered, and a
 > requirement amended in 0.2.0 says so in place.
@@ -928,9 +930,13 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 }
 ```
 
-**EKG-SPEC-44** `buildId` is the publishing repository's commit SHA. `generatedAt` is the build
-time in UTC, ISO 8601 with a `Z` suffix. `schemaVersion` is the version of this specification the
-artifact conforms to. `artifactVersion` is the artifact format's own semver.
+**EKG-SPEC-44** `buildId` is the publishing repository's commit SHA. `generatedAt` is the build's
+timestamp in UTC, ISO 8601 with a `Z` suffix: the committer timestamp of the commit `buildId`
+names, so that a build is a function of its commit (EKG-SPEC-171), and the wall clock only when
+there is no commit to name. `schemaVersion` is the version of this specification the artifact
+conforms to. `artifactVersion` is the artifact format's own semver. *Amended in 0.4.1: `generatedAt`
+was "the build time"; the commit's timestamp is what lets a rebuild of the same commit produce the
+same bytes (#23).*
 
 ### 8.3 Domain files
 
@@ -1002,13 +1008,30 @@ consumer MUST verify the checksum of every file it fetches against the manifest 
 | `feed.json` | `public, max-age=300, stale-while-revalidate=3600` | polled like the manifest (0.2.0) |
 | `builds/<buildId>/*` | `public, max-age=31536000, immutable` | content-addressed by build |
 
-Every file MUST carry a strong `ETag` and MUST honour `If-None-Match`. Every file MUST be served
-with `Content-Type: application/json; charset=utf-8` (`application/gzip` for `all.json.gz`) and
-`Access-Control-Allow-Origin: *` — the graph is public.
+Every file MUST carry a strong `ETag` on its identity (unencoded) representation and MUST honour
+`If-None-Match` with a 304. A content-encoded response (`Content-Encoding: gzip` or `br`) MAY carry
+a weak `ETag` (`W/"…"`) instead: a content coding is a different representation (RFC 9110 §8.8),
+and a compressing CDN rewrites the tag so; `If-None-Match` MUST still answer 304 on that response.
+A consumer compares an `ETag` only with one taken under the same `Accept-Encoding`, and verifies
+bytes by checksum (EKG-SPEC-50), never by `ETag`. Every file MUST be served with
+`Content-Type: application/json; charset=utf-8` (`application/gzip` for `all.json.gz`) and
+`Access-Control-Allow-Origin: *` — the graph is public. *Amended in 0.4.1: the strong `ETag` is
+required on the unencoded representation; a publisher behind a compressing CDN was non-conformant
+as written (#22).*
 
 **EKG-SPEC-52** JSON is UTF-8, with object keys sorted lexicographically and stable array ordering
 (nodes by `ekgId`, edges by `from` then `to`, resources by `ekgId`), so a byte diff between two
 builds is a semantic diff.
+
+**EKG-SPEC-171** A publisher SHOULD make each build byte-reproducible from its `buildId`: the same
+commit, built with the same pinned package version against the same previous artifact, yields the
+same bytes at every path, so that a redeploy of a commit never rewrites `builds/<buildId>/`
+(EKG-SPEC-54) or invalidates a checksum a consumer stored (EKG-SPEC-50). No input to a build is
+the wall clock or anything else the commit does not fix; `generatedAt` is the commit's timestamp
+(EKG-SPEC-44). A redeploy of the commit the live artifact already names is that build again, not
+a new one: the builder keeps the build's own changelog entry, feed entries and `previousBuildId`
+rather than diffing the build against itself. The package's `buildArtifact` reads no clock and
+treats the redeploy so. *Added in 0.4.1 (#23).*
 
 ### 8.6 Changelog and retention
 
@@ -1049,6 +1072,12 @@ it.
 
 **EKG-SPEC-55** Import MUST be idempotent and diff-based, keyed on `ekgId`. Re-importing the same
 `buildId` MUST be a no-op.
+
+**EKG-SPEC-172** A consumer SHOULD NOT infer build order from `generatedAt`. Because it is the
+commit's timestamp (EKG-SPEC-44), a rollback to an earlier commit publishes a current build whose
+`generatedAt` is earlier than the build it replaces. Whether a build has been imported is a
+question of `buildId` (EKG-SPEC-55); which build is current is the manifest's `buildId`; the order
+of builds is `changelog.json`'s (EKG-SPEC-53). *Added in 0.4.1 (#23).*
 
 **EKG-SPEC-56** Import MUST be atomic. A validation failure anywhere aborts the whole import: nothing
 is written, the previously imported snapshot continues to be served, and an operational alert fires.

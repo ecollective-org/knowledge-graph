@@ -3,6 +3,25 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
+## 0.4.1 — unreleased
+
+Two amendments from `docs/decisions/0004-reproducible-builds-and-encoded-etags.md`, both catching
+the specification up with what the publisher already does. Patch: no export, field or rule
+changes; `SCHEMA_VERSION` stays `0.4.0`.
+
+### Changed
+
+- `buildArtifact`: a redeploy of the commit the previous artifact already names is that build
+  again. The builder keeps the build's changelog entry, feed entries and `previousBuildId` instead
+  of diffing the build against itself, so the redeploy is byte-identical to the first deploy and
+  `previousBuildId` never names the build itself (SPEC EKG-SPEC-171; #23). `BuildOptions.generatedAt`
+  is documented as the commit's timestamp (EKG-SPEC-44, amended); the builder reads no clock.
+- SPEC: EKG-SPEC-51 amended, the strong `ETag` is required on the unencoded representation and a
+  content-encoded response may carry a weak one, with `If-None-Match` still answering 304 (#22).
+  EKG-SPEC-44 amended (`generatedAt` is the commit's timestamp); EKG-SPEC-171 added (a publisher
+  SHOULD build byte-reproducibly from the commit) and EKG-SPEC-172 added (a consumer SHOULD NOT
+  infer build order from `generatedAt`) (#23).
+
 ## 0.4.0 — 2026-09-23
 
 One addition, from the addendum to `docs/decisions/0003-commons-resource-records.md`: the evidence
