@@ -60,10 +60,21 @@ EKG-SPEC-27). They review inbound contribution pull requests against the checkli
 §9.4, and record a rejection reason from §9.6.
 
 The only moderator, for now, is the owner, `jmcwilliam` (`SPEC.md` EKG-OQ-2, decided 2026-09-23).
-The review SLA on an inbound bot pull request is not yet published. Until it is, no consumer should
-build a throughput plan on upstream review, which is why every consumer is permitted to serve
-non-`adopted` content, clearly labelled, and why the commons' fast lane exists (`SPEC.md`
-EKG-SPEC-126).
+
+The review SLA on an inbound contribution pull request, decided 2026-09-23 and published on Open
+Degree's governance page (`/standard/governance`, "Review commitment"):
+
+- a first response within 7 days of the pull request opening;
+- a decision within 14 days: merged, changes requested, or rejected with a reason from `SPEC.md`
+  §9.6;
+- past 14 days with no decision, the proposer may open an issue in this repository naming the
+  pull request, and the arbiter decides.
+
+Days are calendar days. It covers pull requests from registered product identities (`SPEC.md`
+§9.3) and from people alike, and it is one reviewer's commitment about response time, not about
+volume: no consumer should build a throughput plan on upstream review, which is why every consumer
+is permitted to serve non-`adopted` content, clearly labelled, and why the commons' fast lane
+exists (`SPEC.md` EKG-SPEC-126).
 
 ### Specification editor
 

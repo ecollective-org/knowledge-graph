@@ -133,7 +133,7 @@ issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
 - Extend the inline `resource` object with §3.6's optional fields, and mint and persist a resource `ekgId` per distinct URL.
 - Generalize the `supersededBy` rule to every entity, and move the prerequisite cycle check to whole-graph scope.
 - Emit the artifact from the site build.
-- Name its moderators and publish an inbound-pull-request review SLA (`EKG-OQ-2`).
+- Moderators named and the review SLA published, 2026-09-23 (`EKG-OQ-2` resolved; `GOVERNANCE.md` §Open Degree moderators).
 
 The full list is [`SPEC.md` §12.4](SPEC.md#124-what-open-degree-must-change-to-conform).
 

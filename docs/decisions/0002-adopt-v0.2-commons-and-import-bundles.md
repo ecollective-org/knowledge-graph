@@ -182,7 +182,8 @@ amend `GOVERNANCE.md`; the owner is the arbiter and authorised it with the rest 
    builds once a registry exists.
 2. Owner: EKG-OQ-2 (Open Degree's maintainers and their review SLA) and EKG-OQ-9 (arbitration).
    Flagged, not answered, by this adoption. *2026-09-23: the owner named themself the only
-   maintainer and the only arbiter for now; the review SLA is still to be published.*
+   maintainer and the only arbiter for now; later the same day the review SLA was published
+   (`GOVERNANCE.md` §Open Degree moderators) and EKG-OQ-2 resolved.*
 3. `app.diydegree.org`: pin 0.2.0; prefer the artifact's `audience` block over the platform
    default; consume `feed.json`; move the canonical fields out of the overlay lists; deduplicate
    cross-domain courses in the snapshot.
