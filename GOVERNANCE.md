@@ -47,6 +47,24 @@ One person holds every maintainer seat today (decided 2026-09-23, "for now"). A 
 therefore has one signatory in practice; the fourteen-day window still applies, because it is
 what gives a future maintainer a say.
 
+#### Bot identities (`SPEC.md` §9.3, EKG-SPEC-62)
+
+The registered identities are the ones in the table: `diy-degree-curation`, `instructos-mapping`
+and `opendegree-commons`. Each is a GitHub App installed on `ecollective-org/www.opendegree.org`
+alone with the permissions `www.opendegree.org/docs/contributor-apps.md` sets out (Contents and
+Pull requests read and write, Metadata read, Checks read, nothing else), never a person's token.
+
+`opendegree-commons` is the one identity operated by the publisher itself: the commons service
+(`app.opendegree.org`) opens pull requests into the standard for resources written back onto
+outcomes and for the nodes, aliases and alignments its review queues accept (OD-PR-01, OD-PR-03,
+OD-MOD-05). Being the publisher's does not shorten its path. A proposal from `opendegree-commons`
+gets the same §9.4 review and, on rejection, a §9.6 reason from a human Open Degree moderator,
+exactly as one from any other consumer; the service never merges its own pull request and never
+records itself as a human reviewer (EKG-SPEC-63). The one thing that differs is provenance: the
+commons carries the original producer forward (`provenance.source: ai` with the model and prompt,
+or `contributor:<handle>` for a person), so a maintainer reviewing the pull request sees who
+proposed the content, not only which service relayed it.
+
 ### Open Degree moderators
 
 Open Degree's own maintainers. They are the human gate on every change to canonical content, and
