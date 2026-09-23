@@ -15,6 +15,13 @@ proposal collection (#28) and the commons' resource records (#29). Additive: a 0
 - SPEC EKG-SPEC-159: the handle character set behind `contributor:<handle>` (§9.3; #30). No
   package change: `CONTRIBUTOR_IDENTITY_PATTERN` is unchanged and now has prose behind it.
 
+- `import-bundle`: a `platforms` proposal collection (`proposals.platforms`, `platformRating`;
+  SPEC §9.7, EKG-SPEC-160; #28): the §3.9 platform fields, `retrievedAt`, an optional `audience`
+  for the platform as a whole and an optional overall `rating` with strengths and limitations. A
+  resource proposal's `platformId` may name a `tmp:` platform in the same bundle (V-26); V-28
+  requires `retrievedAt` and `url` on a platform proposal. An unknown key under `proposals` is now
+  a V-01 warning naming the key (EKG-SPEC-161), not a silent drop.
+
 ### Changed
 
 - `SCHEMA_VERSION` is `0.3.0`; the Appendix B fixture and the artifact examples say so.

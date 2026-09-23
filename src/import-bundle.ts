@@ -6,6 +6,7 @@ import {
   frameworkFields,
   institutionFields,
   offeringFields,
+  platformFields,
   programFields,
   standardFields,
 } from './reference.js';
@@ -16,6 +17,7 @@ import {
   SEGMENT_KINDS,
   VOLATILITIES,
   alignment,
+  audience,
   provenance,
   resourceFields,
   semver,
@@ -83,6 +85,14 @@ export const importProducer = z.object({
 });
 export type ImportProducer = z.infer<typeof importProducer>;
 
+/** A human review of a platform as a whole, for the case the six-dimension rubric does not fit (EKG-SPEC-160). */
+export const platformRating = z.object({
+  overall: z.number().min(1).max(5),
+  strengths: z.array(z.string()).default([]),
+  limitations: z.array(z.string()).default([]),
+});
+export type PlatformRating = z.infer<typeof platformRating>;
+
 export const DEDUPE_DECISIONS = ['new', 'alias_of', 'duplicate_of'] as const;
 /** The search a producer ran before proposing an outcome, and what it decided (EKG-SPEC-122, V-27). */
 export const dedupeEvidence = z.object({
@@ -129,6 +139,7 @@ export const PROPOSAL_COLLECTIONS = [
   'institutions',
   'programs',
   'offerings',
+  'platforms',
 ] as const;
 export type ProposalCollection = (typeof PROPOSAL_COLLECTIONS)[number];
 
@@ -174,6 +185,8 @@ export const proposals = {
   resources: withSubKindRule(
     proposed({
       ...resourceFields,
+      /** May name a `tmp:` platform proposed in the same bundle (EKG-SPEC-160). */
+      platformId: bundleRef.optional(),
       outcomes: z.array(bundleRef).min(1, 'A resource proposal names at least one outcome (V-01)'),
       qualityProposal: qualityProposal.optional(),
     }),
@@ -202,6 +215,13 @@ export const proposals = {
       .default([]),
     retrievedAt,
   }),
+  platforms: proposed({
+    ...platformFields,
+    retrievedAt,
+    /** The platform's audience as a whole, from its admitted age; never a resource's own (EKG-SPEC-155). */
+    audience: audience.optional(),
+    rating: platformRating.optional(),
+  }),
 } as const;
 
 const proposalsObject = z
@@ -218,6 +238,7 @@ const proposalsObject = z
     institutions: z.array(proposals.institutions).default([]),
     programs: z.array(proposals.programs).default([]),
     offerings: z.array(proposals.offerings).default([]),
+    platforms: z.array(proposals.platforms).default([]),
   })
   .prefault({});
 
@@ -340,9 +361,10 @@ const REF_TARGETS: Record<string, { collection: ProposalCollection; type: EkgTyp
   outcome: { collection: 'outcomes', type: 'outcome' },
   institution: { collection: 'institutions', type: 'institution' },
   requiredOfferings: { collection: 'offerings', type: 'offering' },
+  platformId: { collection: 'platforms', type: 'platform' },
 };
 
-const REFERENCE_COLLECTIONS: readonly ProposalCollection[] = ['frameworks', 'standards', 'institutions', 'programs', 'offerings'];
+const REFERENCE_COLLECTIONS: readonly ProposalCollection[] = ['frameworks', 'standards', 'institutions', 'programs', 'offerings', 'platforms'];
 
 const normalizeStatement = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
 
@@ -373,6 +395,16 @@ export function validateImportBundle(input: unknown): ImportBundleValidation {
       errors.push({ rule: ruleOf(issue.message), severity: 'error', slug: '(bundle)', message: issue.message, path: pathToString(issue.path) });
     }
     return { ok: false, errors, warnings, items };
+  }
+
+  // A collection this version does not know is reported, never silently dropped (EKG-SPEC-161).
+  const rawProposals = (input as { proposals?: unknown } | null)?.proposals;
+  if (rawProposals && typeof rawProposals === 'object') {
+    for (const key of Object.keys(rawProposals)) {
+      if (!(PROPOSAL_COLLECTIONS as readonly string[]).includes(key)) {
+        warnings.push({ rule: 'V-01', severity: 'warning', slug: '(bundle)', message: `proposals.${key} is not a collection this version knows (${PROPOSAL_COLLECTIONS.join(', ')}); it was ignored`, path: `proposals.${key}` });
+      }
+    }
   }
 
   // 1. Each proposal on its own, reported by its local id.

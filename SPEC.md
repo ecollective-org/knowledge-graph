@@ -1086,7 +1086,7 @@ A bundle carries:
 | `scope` | `subject`, `gradeBand`, `frameworkIds[]`, and `sources[]`, each `{ title, url, license?, retrievedAt }` |
 | `licenseAcceptance` | `graphContent: "CC BY-SA 4.0"` (EKG-SPEC-105) and `referenceContent`, the commons' terms the producer accepts |
 | `references[]` | existing `ekgId`s the bundle relies on, found in the current artifact |
-| `proposals` | `domains`, `outcomes`, `edges`, `aliases`, `alignments`, `courses`, `resources`, `frameworks`, `standards`, `institutions`, `programs`, `offerings`, each a list |
+| `proposals` | `domains`, `outcomes`, `edges`, `aliases`, `alignments`, `courses`, `resources`, `frameworks`, `standards`, `institutions`, `programs`, `offerings`, `platforms`, each a list |
 
 Every proposal carries a bundle-local `localId` (`tmp:<kebab-case>`), the producer's `confidence`
 (0 to 1) and its own `provenance` (§3.8). A reference from one proposal to another is a `tmp:` id;
@@ -1137,6 +1137,17 @@ specification's.
 **EKG-SPEC-129** The commons importer MUST validate every bundle with the pinned package, MUST run
 V-25 to V-28 over it, and MUST reject a bundle whole on any error, writing nothing; the report says
 which items failed and why.
+
+**EKG-SPEC-160** A `platforms` proposal carries the platform fields of §3.9 and `retrievedAt`
+(V-28), and MAY carry an `audience` block for the platform as a whole (from its admitted age, for
+example) and a `rating` of the platform as a whole: `overall` from 1 to 5 with `strengths` and
+`limitations`, for the case the six-dimension rubric of a resource does not fit. A platform's
+audience or rating never overrides a resource's own (EKG-SPEC-155). A resource proposal's
+`platformId` MAY name a `tmp:` platform proposed in the same bundle (V-26). *Added in 0.3.0.*
+
+**EKG-SPEC-161** A key under `proposals` that the validating package version does not know is
+reported as a warning naming the key, never silently dropped, so a producer on a newer version
+learns that a collection went nowhere. *Added in 0.3.0.*
 
 Example: a bundle from a research session over Open Degree's Geometry seed, proposing the outcome
 the credential body names as not yet written, its edge to the existing stub, a resource, and the

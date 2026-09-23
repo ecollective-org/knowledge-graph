@@ -81,7 +81,7 @@ describe('import bundles (SPEC §9.7)', () => {
     expect(result.bundle?.proposals.outcomes[0]?.level).toBe('advanced');
     expect(result.bundle?.proposals.domains).toEqual([]);
     expect(importBundle.safeParse(bundle()).success).toBe(true);
-    expect(PROPOSAL_COLLECTIONS).toHaveLength(12);
+    expect(PROPOSAL_COLLECTIONS).toHaveLength(13);
   });
 
   it('rejects the envelope, not an item, when the version or the licence grant is wrong', () => {
@@ -221,6 +221,37 @@ describe('import bundles (SPEC §9.7)', () => {
     const bad = validateImportBundle(b);
     expect(bad.items.find((i) => i.ref === 'tmp:khan-triangle-proofs')).toMatchObject({ decision: 'rejected' });
     expect(rulesOf(bad.items, 'tmp:khan-triangle-proofs')).toEqual(['V-01']);
+  });
+
+  it('proposes platforms, lets a resource name a tmp: platform, and warns on a collection it does not know (EKG-SPEC-160/161)', () => {
+    const b = bundle();
+    (b.proposals as Record<string, unknown>).platforms = [{
+      localId: 'tmp:platform-khan-academy', confidence: 0.6,
+      provenance: { source: 'diydegree', generatedAt: at, sourceRepo: 'ecollective-org/www.diydegree.org' },
+      name: 'Khan Academy', url: 'https://www.khanacademy.org/', kind: 'courseware', pricing: 'free',
+      accessibility: 'Captions on every video', ageRequirement: 13, harvestAllowed: false, embedPolicy: 'link-only',
+      safetyNotes: 'Accounts are optional for watching.', retrievedAt: at, operator: 'Khan Academy, Inc.',
+      audience: { rating: 'teen', confidence: 0.4 },
+      rating: { overall: 4.5, strengths: ['Free', 'Captioned'], limitations: ['Exercises need an account'] },
+    }];
+    (b.proposals.resources[0] as { platformId?: string }).platformId = 'tmp:platform-khan-academy';
+    (b.proposals as Record<string, unknown>).regulators = [{ localId: 'tmp:x' }];
+    const result = validateImportBundle(b);
+    expect(result.errors).toEqual([]);
+    expect(result.items.find((i) => i.ref === 'tmp:platform-khan-academy')).toMatchObject({ collection: 'platforms', decision: 'accepted' });
+    expect(result.bundle?.proposals.platforms[0]?.rating?.overall).toBe(4.5);
+    expect(result.bundle?.proposals.platforms[0]?.audience?.rating).toBe('teen');
+    expect((result.bundle?.proposals.platforms[0] as Record<string, unknown>).operator).toBeUndefined();
+    expect(result.warnings.map((w) => [w.rule, w.path])).toEqual([['V-01', 'proposals.regulators']]);
+    expect(PROPOSAL_COLLECTIONS).toContain('platforms');
+
+    (b.proposals.resources[0] as { platformId?: string }).platformId = 'tmp:nys-geo-g-co-10';
+    expect(rulesOf(validateImportBundle(b).items, 'tmp:khan-triangle-proofs')).toEqual(['V-26']);
+    (b.proposals.resources[0] as { platformId?: string }).platformId = 'ekg:outcome:01JBX0DEFNTERMS00000000000';
+    expect(rulesOf(validateImportBundle(b).items, 'tmp:khan-triangle-proofs')).toEqual(['V-26']);
+    delete (b.proposals.resources[0] as { platformId?: string }).platformId;
+    delete ((b.proposals as unknown as { platforms: Record<string, unknown>[] }).platforms[0] as { retrievedAt?: string }).retrievedAt;
+    expect(rulesOf(validateImportBundle(b).items, 'tmp:platform-khan-academy')).toEqual(['V-28']);
   });
 
   it('names the report shape the commons answers with (EKG-SPEC-127)', () => {
