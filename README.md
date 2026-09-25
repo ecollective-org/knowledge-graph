@@ -128,7 +128,9 @@ issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
 
 **Open Degree** — the publisher, and the one with the most to do:
 
-- `ekgId` adoption (`EKG-OQ-1`) is decided: yes, 2026-09-05. The remaining items are the work.
+- `ekgId` adoption (`EKG-OQ-1`) is decided: yes, 2026-09-05. The items below were the work, and all
+  are done: the site's build runs every rule through the package and the live artifact at
+  `https://www.opendegree.org/api/graph/v1/` validates clean under 0.4.1. The list stays as the record.
 - Add `ekgId`, `slug`, `previousSlugs[]`, and `provenance` to the content schema and backfill them once.
 - Extend the inline `resource` object with §3.6's optional fields, and mint and persist a resource `ekgId` per distinct URL.
 - Generalize the `supersededBy` rule to every entity, and move the prerequisite cycle check to whole-graph scope.
@@ -139,18 +141,19 @@ The full list is [`SPEC.md` §12.4](SPEC.md#124-what-open-degree-must-change-to-
 
 **DIY Degree** — before Phase 1:
 
-- Pin the package exactly (EKG-SPEC-82). Until it is published, pin the packed tarball by commit; key every table on `ekgId`.
-- Build `graph-import` against §8.7: idempotent, diff-based, atomic on failure, canonical fields overwritten and overlay fields never touched.
+- Pin the package exactly (EKG-SPEC-82): `@ecollective/knowledge-graph@0.4.1` from npmjs.com; key every table on `ekgId`.
+- Build `graph-import` against §8.7: idempotent, diff-based, atomic on failure, canonical fields overwritten and overlay fields never touched. Built; decide feed freshness by `buildId`, not `generatedAt` (EKG-SPEC-172, its #165).
 - Keep its overlay states (`submitted`, `provisional`, `canonical`, `rejected`) out of the shared model, per the mapping in §5.3.
-- Build `proposal-publisher` to the pull-request format in §9.2, as `diy-degree-curation`.
-- Build `evidence-aggregator` to §10, asserting k ≥ 50 before it emits anything.
+- Build `proposal-publisher` to the pull-request format in §9.2, as `diy-degree-curation` (its #17; the GitHub App install is the owner's, www.opendegree.org#4).
+- Build `evidence-aggregator` to §10, asserting k ≥ 50 before it emits anything. Built, in the `evidence/v1` shape; add `publisher` and `license` and validate with `validateEvidenceReport` before publishing (its #156).
 - Update `docs/requirements.md` §5.3 and OQ-2: the schema package ships from this repository, not from Open Degree's.
 
 **InstructOS** — before any integration work:
 
 - Nothing is required of it yet. When it integrates, it maps onto existing `ekgId`s and publishes
   mappings in the Resource shape of §3.6. Its own positioning rules are not an obstacle to
-  conformance (EKG-SPEC-104), though the posture question remains open (`EKG-OQ-7`).
+  conformance (EKG-SPEC-104), and the posture is settled (`EKG-OQ-7`, resolved 2026-09-23: no public
+  naming of siblings; the backend integrates unbranded).
 
 ## Licence
 
