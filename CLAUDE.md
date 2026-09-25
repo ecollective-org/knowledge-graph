@@ -52,8 +52,13 @@ through npm trusted publishing; there is no token to keep anywhere.
 │   ├── build-artifact.ts                      # buildArtifact, stableStringify, diffCounts, deriveFeed (§8)
 │   └── validate.ts                            # validateGraph, validateDomainFile (§11)
 ├── test/                                      # vitest; fixtures/geometry.json is Appendix B verbatim
-└── docs/decisions/
-    └── 0001-dedicated-framework-repo.md
+├── docs/decisions/                            # one record per adopted change set; the status tables say what merged
+│   ├── 0001-dedicated-framework-repo.md
+│   ├── 0002-adopt-v0.2-commons-and-import-bundles.md
+│   ├── 0003-commons-resource-records.md
+│   └── 0004-reproducible-builds-and-encoded-etags.md
+└── docs/proposals/                            # proposals before adoption
+    └── spec-0.2-commons-and-import-bundles.md
 ```
 
 Two schema families live in `schema.ts`: the **source** schemas (`domain`, `outcome`, …, `entity`)
