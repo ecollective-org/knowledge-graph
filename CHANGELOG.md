@@ -3,10 +3,111 @@
 All notable changes to `@ecollective/knowledge-graph`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow `SPEC.md` §12.
 
-## 0.2.1 — unreleased
+## Unreleased
 
-The first published release: public on npmjs.com under the `ecollective` organisation. No
-package code changes since 0.2.0.
+### Changed
+
+- `GOVERNANCE.md` publishes Open Degree's review SLA on inbound contribution pull requests (a
+  first response within 7 days, a decision within 14, then an issue here for the arbiter),
+  decided by the owner on 2026-09-23 and published on Open Degree's governance page. `SPEC.md`
+  §15 marks EKG-OQ-2 resolved and EKG-OQ-7 resolved (posture (a), InstructOS's decision record
+  0013); §13.1 ticks EKG-SPEC-88. No package change.
+- The repository is public (2026-09-23). `GOVERNANCE.md` no longer suggests a private issue for a
+  conduct concern; the next publish carries an npm provenance attestation, which `publish.yml`
+  switches on for a public repository.
+
+## 0.4.1 — 2026-09-23
+
+Two amendments from `docs/decisions/0004-reproducible-builds-and-encoded-etags.md`, both catching
+the specification up with what the publisher already does. Patch: no export, field or rule
+changes; `SCHEMA_VERSION` stays `0.4.0`. Published on npmjs.com through trusted publishing.
+
+### Changed
+
+- `buildArtifact`: a redeploy of the commit the previous artifact already names is that build
+  again. The builder keeps the build's changelog entry, feed entries and `previousBuildId` instead
+  of diffing the build against itself, so the redeploy is byte-identical to the first deploy and
+  `previousBuildId` never names the build itself (SPEC EKG-SPEC-171; #23). `BuildOptions.generatedAt`
+  is documented as the commit's timestamp (EKG-SPEC-44, amended); the builder reads no clock.
+- SPEC: EKG-SPEC-51 amended, the strong `ETag` is required on the unencoded representation and a
+  content-encoded response may carry a weak one, with `If-None-Match` still answering 304 (#22).
+  EKG-SPEC-44 amended (`generatedAt` is the commit's timestamp); EKG-SPEC-171 added (a publisher
+  SHOULD build byte-reproducibly from the commit) and EKG-SPEC-172 added (a consumer SHOULD NOT
+  infer build order from `generatedAt`) (#23).
+
+## 0.4.0 — 2026-09-23
+
+One addition, from the addendum to `docs/decisions/0003-commons-resource-records.md`: the evidence
+aggregate shape (#21). Additive: a 0.3 artifact, bundle and commons file validate unchanged.
+Published on npmjs.com through trusted publishing.
+
+### Added
+
+- `evidence`: one shape for evidence aggregates, `evidence/v1` (SPEC §10, EKG-SPEC-169, the
+  shape DIY Degree publishes live), with `evidenceReport`, `evidenceNode`, `evidenceResource`,
+  `evidenceWindow`, `EVIDENCE_SCHEMA_VERSION`, `EVIDENCE_K`, `EVIDENCE_LICENSE` and
+  `validateEvidenceReport` (V-33: the k floor on every row, the row count, uniqueness, the window;
+  `publisher` and `license` missing or the `licence` spelling are warnings through 0.4.x and
+  errors from 0.5.0; EKG-SPEC-170). Every object is strict, so no free text or identifier can ride
+  along (EKG-SPEC-68). EKG-OQ-11 resolved; the 0.1 example's field names are withdrawn (#21).
+
+### Changed
+
+- `SCHEMA_VERSION` is `0.4.0`; the Appendix B and §3.10 fixtures and the artifact examples say so.
+- `effectiveness.window` in a commons resource record accepts a date or a datetime, as the
+  publisher's file states it.
+
+## 0.3.0 — 2026-09-23
+
+The 0.3.0 additions, one change per pull request
+(`docs/decisions/0003-commons-resource-records.md`): the handle rule (#30), a `platforms`
+proposal collection (#28) and the commons' resource records (#29). Additive: a 0.2 artifact and a
+0.2 bundle validate unchanged. Published on npmjs.com through trusted publishing.
+
+### Added
+
+- SPEC EKG-SPEC-159: the handle character set behind `contributor:<handle>` (§9.3; #30). No
+  package change: `CONTRIBUTOR_IDENTITY_PATTERN` is unchanged and now has prose behind it.
+
+- `import-bundle`: a `platforms` proposal collection (`proposals.platforms`, `platformRating`;
+  SPEC §9.7, EKG-SPEC-160; #28): the §3.9 platform fields, `retrievedAt`, an optional `audience`
+  for the platform as a whole and an optional overall `rating` with strengths and limitations. A
+  resource proposal's `platformId` may name a `tmp:` platform in the same bundle (V-26); V-28
+  requires `retrievedAt` and `url` on a platform proposal. An unknown key under `proposals` is now
+  a V-01 warning naming the key (EKG-SPEC-161), not a silent drop.
+
+- `commons`: the commons' resource records (SPEC §3.10; EKG-SPEC-162 to EKG-SPEC-167; #29):
+  `commonsResource` (the §3.6 artifact resource plus `outcomes[]`, `state`, `linkStatus`,
+  `quality`, `effectiveness[]`, `previousUrls`, `priceNote`, `description`, and the registered
+  `qualityBreakdown`), `commonsResourceList` (the per-concept file `resources/<ULID>.json`),
+  `validateCommonsResourceList` with V-31 (open layer: `provisional` or `published` only, no
+  registered field) and V-32 (every record names the file's outcome; sorted, unique; V-18 across
+  the file), `COMMONS_PATHS`, `COMMONS_STATES`, `OPEN_COMMONS_STATES`, `LINK_STATUSES`,
+  `QUALITY_DIMENSIONS`, `qualitySummary`, `qualityBreakdown`, `effectiveness`,
+  `resourceOutcomeLink`. The commons' obligation EKG-SPEC-168. EKG-OQ-11 records the §10 aggregate
+  shape mismatch (#21). Fixture: the specification's example, `test/fixtures/commons-resources-geometry.json`.
+
+### Changed
+
+- `SCHEMA_VERSION` is `0.3.0`; the Appendix B fixture and the artifact examples say so.
+- `GOVERNANCE.md` states that `opendegree-commons`, operated by the publisher, has no standing
+  another product's bot lacks: its proposals are reviewed like any other (#24).
+
+## 0.2.2 — 2026-09-23
+
+Published through npm trusted publishing (OIDC), with no token anywhere; the workflow's first
+release that way. No package code changes since 0.2.0.
+
+### Changed
+
+- `publish.yml` authenticates by trusted publishing; the first-release granular token and the
+  `NPM_TOKEN` secret are gone (#2). Provenance attestations attach automatically once the
+  repository is public and are switched off while it is private.
+
+## 0.2.1 — 2026-09-23
+
+The first published release: `@ecollective/knowledge-graph@0.2.1` on npmjs.com, public, under the
+`ecollective` organisation. No package code changes since 0.2.0.
 
 ### Changed
 

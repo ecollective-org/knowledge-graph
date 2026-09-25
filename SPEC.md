@@ -1,13 +1,17 @@
-# eCollective Knowledge Graph Specification, v0.2 draft
+# eCollective Knowledge Graph Specification, v0.4 draft
 
-> Status: **v0.2 draft**, landing change by change from the adopted v0.2 proposal
-> ([`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md));
-> package 0.2.0, unreleased. No package is published yet. This document is the contract three
-> products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
+> Status: **v0.4 draft**: v0.2 (adopted in
+> [`docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md`](docs/decisions/0002-adopt-v0.2-commons-and-import-bundles.md),
+> published as package 0.2.2), the 0.3.0 additions
+> ([`docs/decisions/0003-commons-resource-records.md`](docs/decisions/0003-commons-resource-records.md),
+> published as 0.3.0), the 0.4.0 addition of one evidence-aggregate shape (the addendum to 0003),
+> and the 0.4.1 amendments for reproducible builds and content-encoded responses
+> ([`docs/decisions/0004-reproducible-builds-and-encoded-etags.md`](docs/decisions/0004-reproducible-builds-and-encoded-etags.md)).
+> This document is the contract three products build against; it is not yet frozen. Requirement identifiers (`EKG-SPEC-nn`) are
 > stable once assigned — a withdrawn requirement is marked withdrawn, never renumbered, and a
 > requirement amended in 0.2.0 says so in place.
 >
-> Filed 2026-09-05; v0.2 from 2026-09-17. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
+> Filed 2026-09-05; v0.2 from 2026-09-17; v0.3 and v0.4 from 2026-09-23. Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Why this repository exists:
 > [`docs/decisions/0001-dedicated-framework-repo.md`](docs/decisions/0001-dedicated-framework-repo.md).
 
 ## 1. Purpose and scope
@@ -441,6 +445,108 @@ entities exactly as to graph entities, and V-02 applies to their references (`in
 `requiredOfferings`, `outcomeMappings[].outcome`). The package's `validateGraph` accepts them in
 source mode, beside graph entities or alone, for that purpose.
 
+### 3.10 Commons resource records
+
+A resource in the graph artifact is a pointer with metadata (§3.6, §8.3). The commons enriches
+it: which concepts it teaches and how well, what raters and learners made of it, whether its link
+still answers, and where it stands in review. A consumer that renders "free ways to learn this"
+or filters a list by audience needs that enriched row, so its public shape is pinned here as §3.9
+pins the reference entities. *Added in 0.3.0.*
+
+A **commons resource record** is the artifact resource of §3.6 (every field; `ekgId` and
+`provenance` required; `audience` and the 0.2 fields included) plus:
+
+| Field | Type | Layer | Notes |
+| --- | --- | --- | --- |
+| `description` | `string` ? | open | |
+| `previousUrls` | URL[] ? (`[]`) | open | URLs the resource was known by; its identity survives a move (EKG-SPEC-25) |
+| `priceNote` | `string` ? | open | a sentence for people, never a price as a fact |
+| `outcomes` | `{ outcome: ref → Outcome, coverage: string[] ? (`[]`), rankHint: integer ? }[]` | open | the concepts it teaches, minimum 1; `coverage` as EKG-SPEC-12, per concept |
+| `state` | `pending` \| `provisional` \| `published` \| `retired` | open | the record's own lifecycle; EKG-SPEC-163 |
+| `linkStatus` | `ok` \| `failing` ? | open | the recurring link check (EKG-SPEC-40); a hidden resource is not published |
+| `quality` | `{ mean: 1–5 ?, n: integer, humanN: integer ?, floorCleared: boolean ? }` ? | open | the quality summary; EKG-SPEC-164 |
+| `effectiveness` | Effectiveness[] ? (`[]`) | open | the products' evidence aggregates; EKG-SPEC-165 |
+| `qualityBreakdown` | `{ correctness, coverage, clarity, efficiency, accessibility, trust }`, each 1–5 ? | **registered** | the per-dimension means; never in the open artifact (V-31) |
+
+An **Effectiveness** entry is `{ publisher, learners, firstAttemptPassPct ?, window: { from ?, to },
+importedAt }`: the publishing product, the number of distinct learners (at least k = 50,
+EKG-SPEC-69), the whole-percent first-attempt pass rate, the window's dates, and when the commons
+imported it: the per-resource row of an `evidence/v1` file (§10, EKG-SPEC-169) with the publisher
+and the import time added. In a commons record the resource's own `coverage`
+(§3.6) SHOULD be the union of its `outcomes[].coverage`; the per-concept lists are authoritative.
+
+**EKG-SPEC-162** The commons publishes its resource records per concept, at `resources/<ULID>.json`
+under its prefix (EKG-SPEC-115), where `<ULID>` is the outcome's `ekgId` ULID, so that a rename
+never moves the file (EKG-SPEC-20). The file is `{ schemaVersion, buildId, generatedAt, outcome,
+records[] }`, listed in the commons' `checksums.json` (EKG-SPEC-50); `records` are sorted by
+`ekgId` and unique (EKG-SPEC-52), and every record names the file's `outcome` in its `outcomes`
+(V-32). One `ekgId` is one resource across the graph artifact and every commons file it appears
+in (EKG-SPEC-25, V-18).
+
+**EKG-SPEC-163** A commons record's `state` is one of `pending` (received, not yet reviewed, not
+public), `provisional` (published ahead of review, labelled as such), `published` (reviewed) and
+`retired`. None of these is a shared lifecycle token (EKG-SPEC-29), and a record has no `status`.
+The open artifact carries `provisional` and `published` records only (V-31). A consumer that
+presents a `provisional` record MUST label it as not yet reviewed (EKG-SPEC-30 applies to it), and
+MUST drop a record that no longer appears in the artifact on its next import.
+
+**EKG-SPEC-164** `quality` summarises the ratings the commons holds for the resource: `mean` is the
+mean over the six rubric dimensions across raters and product aggregates, from 1 to 5, and is
+absent while nothing has been rated; `n` is the number of ratings behind it and `humanN` how many
+were human; `floorCleared` says the automated floor of the producer's proposal was met, which is
+a judgement, not a rating, and a consumer MUST NOT present it as one. A consumer MAY render "not
+yet rated" below a count of its choosing. The per-dimension means are the registered layer
+(`qualityBreakdown`) and MUST NOT appear in the open artifact (V-31).
+
+**EKG-SPEC-165** `effectiveness` entries are the evidence aggregates of §10 as the commons imported
+them: k ≥ 50 and whole percents (EKG-SPEC-69), CC0 (EKG-SPEC-106), advisory (EKG-SPEC-73). A
+consumer MAY rank on them and MUST NOT gate on them.
+
+**EKG-SPEC-166** The record's `audience` block is the one a consumer reads for the ceiling of
+EKG-SPEC-111 and for filtering a list by audience. A consumer MAY hold a stricter overlay and MUST
+NOT publish a looser one (EKG-SPEC-112).
+
+**EKG-SPEC-167** A consumer of the commons' resource records MUST validate every file against V-01,
+V-18, V-31 and V-32 and MUST NOT render a record from a file that fails; the commons MUST run the
+same rules before it publishes a file.
+
+Example: the Appendix B Khan Academy resource as a commons record for `define-geometric-terms`.
+The resource, the outcome and the evidence statement are real; the ratings, the aggregate and
+the build are illustrative.
+
+```json
+{
+  "schemaVersion": "0.4.0",
+  "buildId": "c4d1e9a0b7f2c3d4e5f60718293a4b5c6d7e8f90",
+  "generatedAt": "2026-09-23T02:00:00Z",
+  "outcome": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+  "records": [
+    { "ekgId": "ekg:resource:01JBXKHANACADEMY0000000000", "title": "Khan Academy, High School Geometry",
+      "url": "https://www.khanacademy.org/math/geometry", "kind": "video", "cost": "free",
+      "provider": "Khan Academy", "modality": "watch", "language": "en", "hasCaptions": true,
+      "license": "CC BY-NC-SA 3.0 US", "attributionText": "Khan Academy, High School Geometry (CC BY-NC-SA 3.0 US)",
+      "embedPolicy": "link-only",
+      "coverage": ["Writes a definition of each term that a peer can use to decide whether a given figure is an example."],
+      "lastVerifiedAt": "2026-09-22T00:00:00Z",
+      "platformId": "ekg:platform:01JBXP7ATF0RMKHAN000000000",
+      "audience": { "rating": "all", "descriptors": [],
+        "basis": { "automated": { "modelId": "claude-sonnet-5", "promptVersion": "audience-v1",
+          "at": "2026-09-16T02:00:00Z", "signals": ["title", "captions", "provider_flag"] },
+          "human": { "count": 2, "lastAt": "2026-09-16T15:20:00Z" } },
+        "confidence": 0.9, "disputes": 0, "version": 2 },
+      "outcomes": [ { "outcome": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+        "coverage": ["Writes a definition of each term that a peer can use to decide whether a given figure is an example."],
+        "rankHint": 1 } ],
+      "state": "published", "linkStatus": "ok",
+      "quality": { "mean": 4.2, "n": 7, "humanN": 5, "floorCleared": true },
+      "effectiveness": [ { "publisher": "diydegree", "learners": 210, "firstAttemptPassPct": 68,
+        "window": { "from": "2026-08-31", "to": "2026-09-06" }, "importedAt": "2026-09-07T02:10:00Z" } ],
+      "provenance": { "source": "opendegree", "generatedAt": "2026-09-05T04:12:07Z",
+        "sourceRepo": "ecollective-org/www.opendegree.org", "sourceCommit": "8f3c1d0e" } }
+  ]
+}
+```
+
 ## 4. Identifiers
 
 Two identifiers per entity, with different jobs. The `slug` is for humans and URLs and changes; the
@@ -807,7 +913,7 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 
 ```json
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.4.0",
   "artifactVersion": "1.0.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
@@ -824,9 +930,13 @@ The `v1` segment is the artifact's **major** version and changes only on a break
 }
 ```
 
-**EKG-SPEC-44** `buildId` is the publishing repository's commit SHA. `generatedAt` is the build
-time in UTC, ISO 8601 with a `Z` suffix. `schemaVersion` is the version of this specification the
-artifact conforms to. `artifactVersion` is the artifact format's own semver.
+**EKG-SPEC-44** `buildId` is the publishing repository's commit SHA. `generatedAt` is the build's
+timestamp in UTC, ISO 8601 with a `Z` suffix: the committer timestamp of the commit `buildId`
+names, so that a build is a function of its commit (EKG-SPEC-171), and the wall clock only when
+there is no commit to name. `schemaVersion` is the version of this specification the artifact
+conforms to. `artifactVersion` is the artifact format's own semver. *Amended in 0.4.1: `generatedAt`
+was "the build time"; the commit's timestamp is what lets a rebuild of the same commit produce the
+same bytes (#23).*
 
 ### 8.3 Domain files
 
@@ -847,7 +957,7 @@ complete file is Appendix B):
 
 ```jsonc
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.4.0",
   "buildId": "8f3c…",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": { "ekgId": "ekg:domain:01J…", "slug": "geometry", "type": "domain", "title": "Geometry",
@@ -898,13 +1008,30 @@ consumer MUST verify the checksum of every file it fetches against the manifest 
 | `feed.json` | `public, max-age=300, stale-while-revalidate=3600` | polled like the manifest (0.2.0) |
 | `builds/<buildId>/*` | `public, max-age=31536000, immutable` | content-addressed by build |
 
-Every file MUST carry a strong `ETag` and MUST honour `If-None-Match`. Every file MUST be served
-with `Content-Type: application/json; charset=utf-8` (`application/gzip` for `all.json.gz`) and
-`Access-Control-Allow-Origin: *` — the graph is public.
+Every file MUST carry a strong `ETag` on its identity (unencoded) representation and MUST honour
+`If-None-Match` with a 304. A content-encoded response (`Content-Encoding: gzip` or `br`) MAY carry
+a weak `ETag` (`W/"…"`) instead: a content coding is a different representation (RFC 9110 §8.8),
+and a compressing CDN rewrites the tag so; `If-None-Match` MUST still answer 304 on that response.
+A consumer compares an `ETag` only with one taken under the same `Accept-Encoding`, and verifies
+bytes by checksum (EKG-SPEC-50), never by `ETag`. Every file MUST be served with
+`Content-Type: application/json; charset=utf-8` (`application/gzip` for `all.json.gz`) and
+`Access-Control-Allow-Origin: *` — the graph is public. *Amended in 0.4.1: the strong `ETag` is
+required on the unencoded representation; a publisher behind a compressing CDN was non-conformant
+as written (#22).*
 
 **EKG-SPEC-52** JSON is UTF-8, with object keys sorted lexicographically and stable array ordering
 (nodes by `ekgId`, edges by `from` then `to`, resources by `ekgId`), so a byte diff between two
 builds is a semantic diff.
+
+**EKG-SPEC-171** A publisher SHOULD make each build byte-reproducible from its `buildId`: the same
+commit, built with the same pinned package version against the same previous artifact, yields the
+same bytes at every path, so that a redeploy of a commit never rewrites `builds/<buildId>/`
+(EKG-SPEC-54) or invalidates a checksum a consumer stored (EKG-SPEC-50). No input to a build is
+the wall clock or anything else the commit does not fix; `generatedAt` is the commit's timestamp
+(EKG-SPEC-44). A redeploy of the commit the live artifact already names is that build again, not
+a new one: the builder keeps the build's own changelog entry, feed entries and `previousBuildId`
+rather than diffing the build against itself. The package's `buildArtifact` reads no clock and
+treats the redeploy so. *Added in 0.4.1 (#23).*
 
 ### 8.6 Changelog and retention
 
@@ -945,6 +1072,12 @@ it.
 
 **EKG-SPEC-55** Import MUST be idempotent and diff-based, keyed on `ekgId`. Re-importing the same
 `buildId` MUST be a no-op.
+
+**EKG-SPEC-172** A consumer SHOULD NOT infer build order from `generatedAt`. Because it is the
+commit's timestamp (EKG-SPEC-44), a rollback to an earlier commit publishes a current build whose
+`generatedAt` is earlier than the build it replaces. Whether a build has been imported is a
+question of `buildId` (EKG-SPEC-55); which build is current is the manifest's `buildId`; the order
+of builds is `changelog.json`'s (EKG-SPEC-53). *Added in 0.4.1 (#23).*
 
 **EKG-SPEC-56** Import MUST be atomic. A validation failure anywhere aborts the whole import: nothing
 is written, the previously imported snapshot continues to be served, and an operational alert fires.
@@ -996,6 +1129,13 @@ identities: `diy-degree-curation` (DIY Degree), `instructos-mapping` (InstructOS
 **EKG-SPEC-63** The bot identity appears in `contributors` and in `provenance.reviewedBy` only when
 a human actually reviewed the proposal on the contributing side; a bot MUST NOT record itself as a
 human reviewer.
+
+**EKG-SPEC-159** A human producer of an import bundle (§9.7) is identified as `contributor:<handle>`.
+The handle is lowercase ASCII letters, digits and hyphens, beginning with a letter or a digit:
+`^[a-z0-9][a-z0-9-]*$`, which is the package's `CONTRIBUTOR_IDENTITY_PATTERN` applied after the
+prefix. A consumer that mints handles MUST keep them inside that set (it MAY be stricter, as the
+commons is with `[a-z][a-z0-9-]{2,19}`) and MUST treat uniqueness as case-insensitive. A handle is
+an identity, never an email address or a legal name (EKG-SPEC-14).
 
 ### 9.4 Review checklist
 
@@ -1074,11 +1214,11 @@ A bundle carries:
 | Field | Notes |
 | --- | --- |
 | `bundleVersion` | the version of this section the bundle follows, semver; `1.x` today |
-| `producer` | `tool`, `toolVersion`, `modelId`, `promptVersion`, `sessionId` (a string, never a person), `producedAt`, and `identity`: a registered product identity (§9.3) or `contributor:<handle>` |
+| `producer` | `tool`, `toolVersion`, `modelId`, `promptVersion`, `sessionId` (a string, never a person), `producedAt`, and `identity`: a registered product identity (§9.3) or `contributor:<handle>`, the handle as EKG-SPEC-159 defines it |
 | `scope` | `subject`, `gradeBand`, `frameworkIds[]`, and `sources[]`, each `{ title, url, license?, retrievedAt }` |
 | `licenseAcceptance` | `graphContent: "CC BY-SA 4.0"` (EKG-SPEC-105) and `referenceContent`, the commons' terms the producer accepts |
 | `references[]` | existing `ekgId`s the bundle relies on, found in the current artifact |
-| `proposals` | `domains`, `outcomes`, `edges`, `aliases`, `alignments`, `courses`, `resources`, `frameworks`, `standards`, `institutions`, `programs`, `offerings`, each a list |
+| `proposals` | `domains`, `outcomes`, `edges`, `aliases`, `alignments`, `courses`, `resources`, `frameworks`, `standards`, `institutions`, `programs`, `offerings`, `platforms`, each a list |
 
 Every proposal carries a bundle-local `localId` (`tmp:<kebab-case>`), the producer's `confidence`
 (0 to 1) and its own `provenance` (§3.8). A reference from one proposal to another is a `tmp:` id;
@@ -1129,6 +1269,17 @@ specification's.
 **EKG-SPEC-129** The commons importer MUST validate every bundle with the pinned package, MUST run
 V-25 to V-28 over it, and MUST reject a bundle whole on any error, writing nothing; the report says
 which items failed and why.
+
+**EKG-SPEC-160** A `platforms` proposal carries the platform fields of §3.9 and `retrievedAt`
+(V-28), and MAY carry an `audience` block for the platform as a whole (from its admitted age, for
+example) and a `rating` of the platform as a whole: `overall` from 1 to 5 with `strengths` and
+`limitations`, for the case the six-dimension rubric of a resource does not fit. A platform's
+audience or rating never overrides a resource's own (EKG-SPEC-155). A resource proposal's
+`platformId` MAY name a `tmp:` platform proposed in the same bundle (V-26). *Added in 0.3.0.*
+
+**EKG-SPEC-161** A key under `proposals` that the validating package version does not know is
+reported as a warning naming the key, never silently dropped, so a producer on a newer version
+learns that a collection went nowhere. *Added in 0.3.0.*
 
 Example: a bundle from a research session over Open Degree's Geometry seed, proposing the outcome
 the credential body names as not yet written, its edge to the existing stub, a resource, and the
@@ -1200,32 +1351,52 @@ percent; durations to the nearest minute.
 anyone else may use them without condition.
 
 **EKG-SPEC-71** Cadence is weekly. Each file states its window explicitly. Windows are whole weeks,
-Monday to Sunday UTC, plus an all-time rollup.
+Monday to Sunday UTC, plus an all-time rollup, whose `window.from` is `null`.
 
-Shape:
+**EKG-SPEC-169** An aggregate file has exactly one shape, `evidence/v1`, the package's
+`evidenceReport`: `schemaVersion: "evidence/v1"`; `publisher`, the product that published it;
+`license: "CC0-1.0"` (EKG-SPEC-106); `k`, at least 50; `window` (`from`, a date or datetime or
+`null` for the rollup; `to`); `generatedAt`; `nodesConsidered` and `nodesPublished` (how many
+nodes had any activity and how many cleared k; never a figure that lets a suppressed value be
+inferred, EKG-SPEC-72); and `nodes`, each `{ ekgId, learners, firstAttemptPassPct, masteryPct,
+medianMinutesToMastery, resources[] }` with `resources[]` of `{ resourceEkgId, learners,
+firstAttemptPassPct }`. Percentages are whole numbers from 0 to 100 (EKG-SPEC-69) or `null` when
+nobody was measured; minutes are whole. Every object is closed: a field this section does not name
+is a validation error, which is how "no free text, no identifier" (EKG-SPEC-68) is enforced.
+*Added in 0.4.0, resolving EKG-OQ-11: this is the shape DIY Degree publishes live and the commons
+reads; the 0.1 example's `learnersN`, fractional rates and `resources[].ekgId` are withdrawn.
+`publisher` and `license` are required; a 0.4 validator reports their absence, and the older
+`licence` spelling, as warnings, and treats them as errors from 0.5.0.*
 
 ```json
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "evidence/v1",
   "publisher": "diydegree",
   "license": "CC0-1.0",
-  "window": { "kind": "week", "start": "2026-08-31", "end": "2026-09-06" },
   "k": 50,
+  "window": { "from": "2026-08-31", "to": "2026-09-06" },
   "generatedAt": "2026-09-07T02:00:00Z",
+  "nodesConsidered": 12,
+  "nodesPublished": 1,
   "nodes": [
     {
-      "ekgId": "ekg:outcome:01JBWX3QK7Z8Y4N2M5R6T7V8W9",
-      "learnersN": 412,
-      "firstAttemptPassRate": 0.61,
-      "masteryRate": 0.88,
+      "ekgId": "ekg:outcome:01JBX0DEFNTERMS00000000000",
+      "learners": 412,
+      "firstAttemptPassPct": 61,
+      "masteryPct": 88,
       "medianMinutesToMastery": 47,
       "resources": [
-        { "ekgId": "ekg:resource:01JBX…", "learnersN": 210, "firstAttemptPassRate": 0.68 }
+        { "resourceEkgId": "ekg:resource:01JBXKHANACADEMY0000000000", "learners": 210, "firstAttemptPassPct": 68 }
       ]
     }
   ]
 }
 ```
+
+**EKG-SPEC-170** A publisher MUST validate an aggregate file with the package's
+`validateEvidenceReport` before publishing it and MUST NOT publish a file that fails (V-01, V-33).
+A consumer MUST validate a file before reading it and MUST ignore a file that fails, rather than
+read the rows that look right. The validator holds the k floor on every row (EKG-SPEC-69, -72).
 
 **EKG-SPEC-72** A per-resource aggregate is itself subject to k ≥ 50; a resource used by fewer than
 50 learners in the window is omitted, not zeroed. Suppression MUST be by omission, and a consumer
@@ -1278,11 +1449,16 @@ any violation (EKG-SPEC-56).
 | V-28 | Bundle only: every proposed resource carries `license` and an `embedPolicy` other than `unknown`; every proposed reference item carries `retrievedAt` and a URL (EKG-SPEC-125). | added 0.2.0 |
 | V-29 | Every outcome listed in a course's `segments[]` appears in that course's `outcomes` (EKG-SPEC-135). Also run over bundle courses. | added 0.2.0 |
 | V-30 | An outcome's alignment never names a `program_classification` framework, and one that names an `exam_outline` framework carries `relation` `narrower` or `related` (EKG-SPEC-141/142); the kind comes from the registry. Also run over bundle outcomes. | added 0.2.0 |
+| V-31 | Commons resource file, open layer: every record's `state` is `provisional` or `published`, and no record carries a registered-layer field (`qualityBreakdown`) (EKG-SPEC-163/164). | added 0.3.0 |
+| V-32 | Commons resource file: every record names the file's `outcome` in its `outcomes`; records are sorted by `ekgId` and unique; V-18 runs across the file's records (EKG-SPEC-162). | added 0.3.0 |
+| V-33 | Evidence file only: every node and every resource row describes at least `k` learners (EKG-SPEC-69/72); `nodesPublished` matches the rows; no node or resource appears twice; the window is ordered; `publisher` and `license` are present (a warning through 0.4.x, an error from 0.5.0; EKG-SPEC-169). | added 0.4.0 |
 
 V-25 to V-28 apply to import bundles (§9.7) and are run by the commons importer (EKG-SPEC-129). A
 publisher's build and a consumer's import never see a bundle, so EKG-SPEC-74 is unchanged by them.
 V-29 and V-30 reach only fields no 0.1 content has (`segments`, and alignments to frameworks
-registered in 0.2.0), so existing conformant content cannot fail them.
+registered in 0.2.0), so existing conformant content cannot fail them. V-31 and V-32 reach only
+the commons' resource files (§3.10), which the package's `validateCommonsResourceList` checks;
+V-33 only evidence files (§10), which `validateEvidenceReport` checks.
 
 **EKG-SPEC-75** V-03's cycle check runs over the whole graph, not per domain. A per-domain
 coherence view ignores prerequisites outside the domain when it computes layers, which is correct
@@ -1378,7 +1554,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-85** Runs every validation rule in §11 in its build and fails the build on any violation.
 - [ ] **EKG-SPEC-86** Mints `ekgId` on merge for every new entity that arrives without one, adopts a producer-minted id under EKG-SPEC-145, and never re-mints. *Amended in 0.2.0 (Change G).*
 - [ ] **EKG-SPEC-87** Maintains slug history: `previousSlugs[]` on rename, and an HTTP redirect from every previous slug.
-- [ ] **EKG-SPEC-88** Reviews inbound contribution pull requests against §9.4, records a rejection reason from §9.6, and publishes its review SLA.
+- [x] **EKG-SPEC-88** Reviews inbound contribution pull requests against §9.4, records a rejection reason from §9.6, and publishes its review SLA. *Ticked 2026-09-23: the §9.4 checklist is in the publisher's pull request template, and the SLA is published (`GOVERNANCE.md` §Open Degree moderators; `/standard/governance`).*
 - [ ] **EKG-SPEC-89** Owns the shared `status` field. Never asks another product to assert adoption.
 - [ ] **EKG-SPEC-90** Never stores, requests, or accepts learner data — not from a contribution, not from an aggregate, not from anywhere. It remains true that Open Degree does not track learners.
 
@@ -1390,7 +1566,7 @@ rather than claim the contract.
 - [ ] **EKG-SPEC-94** Follows `supersededBy` transitively to depth 8 on every read, and rewrites its own records atomically on a merge (FR-EKG-09/10).
 - [ ] **EKG-SPEC-95** Labels every non-`adopted` node in every surface, including public pages (FR-EKG-06).
 - [ ] **EKG-SPEC-96** Exposes `provenance` and the upstream `buildId` in its API and UI (FR-EKG-05).
-- [ ] **EKG-SPEC-97** Contributes only through the four channels of §9.1, by bot pull request as `diy-degree-curation`, under CC BY-SA 4.0; publishes aggregates only above k = 50, under CC0 (FR-EKG-07/11).
+- [ ] **EKG-SPEC-97** Contributes only through the four channels of §9.1, by bot pull request as `diy-degree-curation`, under CC BY-SA 4.0; publishes aggregates only above k = 50, under CC0, in the `evidence/v1` shape validated before publishing (EKG-SPEC-169/170; FR-EKG-07/11).
 - [ ] **EKG-SPEC-98** Never contributes learner work or personal data through any channel (FR-EKG-12).
 - [ ] **EKG-SPEC-99** Renders attribution for Open Degree-derived definitions and for every resource (FR-EKG-13).
 - [ ] **EKG-SPEC-114** Enforces the audience ceiling of EKG-SPEC-111 for every learner under 18 from the artifact's `audience` block, holds any stricter rating of its own as an overlay, and never serves an `unrated` resource as a minor's primary (decision record 0008 there).
@@ -1424,6 +1600,7 @@ content as adopted. It need do nothing else, and it needs nobody's permission.
 - [ ] **EKG-SPEC-132** Answers every bundle with the report of EKG-SPEC-127 and records each rejection with a §9.6 reason.
 - [ ] **EKG-SPEC-133** Publishes reference entities under `https://app.opendegree.org/api/commons/v1/` only, never in a graph domain file (EKG-SPEC-115), with an explicit licence on every record (EKG-SPEC-119).
 - [ ] **EKG-SPEC-134** Never stores learner data (EKG-SPEC-90 applies to it as to Open Degree) and never publishes a rater's or a contributor's personal data.
+- [ ] **EKG-SPEC-168** Publishes its resource records per concept in the shape of §3.10, the open layer only, and runs V-01, V-18, V-31 and V-32 over every file before it publishes (EKG-SPEC-167).
 
 ## 14. Licensing
 
@@ -1453,14 +1630,15 @@ as training data, and no term of this specification may be read to grant any rig
 | # | Question | Blocks |
 | --- | --- | --- |
 | **EKG-OQ-1** | **Resolved 2026-09-05: yes.** Open Degree adds and backfills `ekgId` (with `slug`, `previousSlugs[]` and `provenance`) through this package and emits the artifact from its build, per §12.4. The slug-plus-alias registry alternative is rejected. (DIY Degree's OQ-4.) | Nothing now; the conformance work is tracked in `www.opendegree.org`. |
-| **EKG-OQ-2** | Who are Open Degree's maintainers, and what is their SLA on an inbound bot pull request? (DIY Degree's OQ-3.) **Partly resolved 2026-09-23:** the only maintainer, for now, is the owner, `jmcwilliam` (`GOVERNANCE.md` §Roles). The review SLA is still to be published, so EKG-SPEC-88 stays unticked; meanwhile the commons' fast lane keeps learners unblocked without upstream review (EKG-SPEC-126). | The SLA: any consumer staffing plan built on upstream review. |
+| **EKG-OQ-2** | Who are Open Degree's maintainers, and what is their SLA on an inbound bot pull request? (DIY Degree's OQ-3.) **Resolved 2026-09-23:** the only maintainer, for now, is the owner, `jmcwilliam`, and the review SLA is a first response within 7 days, a decision within 14, and past that an issue in this repository for the arbiter (`GOVERNANCE.md` §Open Degree moderators; published on Open Degree's governance page). EKG-SPEC-88 is ticked. The SLA is about response time, not volume, so the commons' fast lane still keeps learners unblocked without upstream review (EKG-SPEC-126). | Nothing now. |
 | **EKG-OQ-3** | **Resolved 2026-09-17: a manual backfill, enforced by the build.** The resource `ekgId` is minted in the content repository (`npm run backfill:ekg` in Open Degree, committed by a person or a bot) and the build refuses a resource without one; EKG-SPEC-24 is amended to say so. | Nothing now. |
 | **EKG-OQ-4** | Should `resource` become a first-class collection in Open Degree rather than an inline object? It has identity, provenance, and a lifecycle already. **Still open at 0.2.0.** Source resources stay inline; the commons holds resources as records of its own service (§9.7, its requirements OD-RES), which takes the pressure off the source layout. | A source-layout question, not a contract question: the artifact (§8.3) already treats resources as first-class. |
 | **EKG-OQ-5** | Does `Alignment` need its own `ekgId`? Today it is a value object. **Still open at 0.2.0.** Bundles propose alignments per outcome (§9.7), which needs no alignment identity. | Independent proposal, review and supersession of alignments, if ever wanted. |
 | **EKG-OQ-6** | Is a second edge type needed — `related`, `broader`, or `part-of`? **Still open at 0.2.0.** Bundle edges are `prerequisite` only; adding an edge type is additive (§12.1). | Nothing yet. |
-| **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. Is that sufficient, or does the owner want the positioning revisited? (DIY Degree's OQ-14.) | InstructOS integration work. |
+| **EKG-OQ-7** | InstructOS's integration posture: its current rules forbid naming sibling brands publicly and forbid describing its work as open source. EKG-SPEC-104 says conformance never requires either. (DIY Degree's OQ-14.) **Resolved 2026-09-23:** the owner chose posture (a): the no-name rule governs InstructOS's marketing site and its app's public surfaces, private surfaces (code, docs, IAM) may name siblings, and its backend integrates with the family unbranded (InstructOS's decision record 0013, its `app.instructos.org`; DIY Degree's OQ-14). EKG-SPEC-104 stands unchanged; nothing in the specification moves. | Nothing now. |
 | **EKG-OQ-8** | Is k = 50 the right threshold? It is conservative, and it means a new node publishes no evidence for a long time. Lowering it is a privacy decision, not an engineering one. | Nothing yet; revisit with real volume. |
 | **EKG-OQ-9** | Who arbitrates a disagreement between an Open Degree maintainer and a consumer's curator? **Resolved 2026-09-23:** the owner is the only arbiter for the moment, for content as for the schema; the appeal path is an issue in this repository (`GOVERNANCE.md` §Roles). When a governance body exists, this changes. | Nothing now. |
+| **EKG-OQ-11** | **Resolved 2026-09-23 (0.4.0):** §10 has one shape, `evidence/v1` (EKG-SPEC-169), the one DIY Degree publishes live, and the package validates it (`validateEvidenceReport`, V-33, EKG-SPEC-170). `publisher` and `license` are required with a warning-only period through 0.4.x. Issue #21. | Nothing now. |
 | **EKG-OQ-10** | Enum growth deferred to the next major (the v0.2 proposal's Change J): `audio`, `course` and `paper` as resource `kind` values, and `teacher` as a provenance `source`. Adding an enum value breaks a 0.1 validator (EKG-SPEC-78 covers unknown fields, not unknown values), so this waits for EKG-SPEC-79's sign-off and window. Until then `subKind` carries the refinement and `source: diydegree` with a product-side recommender record carries a teacher's authorship. | The next major release. |
 
 ---
@@ -1653,7 +1831,7 @@ the complete Markdown. Arrays are in the order EKG-SPEC-52 requires, and the pac
 
 ```json
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.4.0",
   "buildId": "8f3c1d0e5a9b4c72e6d18a03f5b9c4e77a2d6013",
   "generatedAt": "2026-09-05T04:12:07Z",
   "domain": {

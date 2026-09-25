@@ -19,11 +19,11 @@ importer and contributor), and InstructOS (mapper).
 assessment, or credential. All of that is in `ecollective-org/www.opendegree.org`. See
 `docs/decisions/0001-dedicated-framework-repo.md` for why.
 
-Status: **v0.2 draft specification (`docs/decisions/0002-…`); package code at 0.2.1, publishing to
-npmjs.com as a public package under the `ecollective` organisation.** `schema.ts`, `validate.ts`
-and `build-artifact.ts` exist with tests;
-the builder reproduces Appendix B byte for byte. Publishing is a tag push; the first release needs
-the owner's `NPM_TOKEN` secret, later releases use trusted publishing (#2, `publish.yml`).
+Status: **v0.4 draft specification (`docs/decisions/0002-…` to `0004-…`); package 0.4.1
+published on npmjs.com, public, under the `ecollective` organisation.** `schema.ts`, `validate.ts` and `build-artifact.ts`
+exist with tests;
+the builder reproduces Appendix B byte for byte. Publishing is a `v*` tag push (`publish.yml`)
+through npm trusted publishing; there is no token to keep anywhere.
 
 ## Layout
 
@@ -46,6 +46,8 @@ the owner's `NPM_TOKEN` secret, later releases use trusted publishing (#2, `publ
 │   ├── frameworks.ts                          # the framework registry (§6.2)
 │   ├── reference.ts                           # the commons' reference entities (§3.9)
 │   ├── import-bundle.ts                       # importBundle, validateImportBundle, the report (§9.7)
+│   ├── commons.ts                             # commonsResource, commonsResourceList, validateCommonsResourceList (§3.10)
+│   ├── evidence.ts                            # evidenceReport, validateEvidenceReport (§10)
 │   ├── url.ts                                 # normalizeResourceUrl (EKG-SPEC-25)
 │   ├── build-artifact.ts                      # buildArtifact, stableStringify, diffCounts, deriveFeed (§8)
 │   └── validate.ts                            # validateGraph, validateDomainFile (§11)

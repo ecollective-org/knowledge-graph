@@ -170,9 +170,11 @@ amend `GOVERNANCE.md`; the owner is the arbiter and authorised it with the rest 
 - Open Degree's site adopts the optional fields in its zod-3 adapter, emits courses per domain
   with `crossDomain`, publishes `feed.json`, and swaps its own builder for the package's
   (www.opendegree.org#10 and a new issue for the swap).
-- Publishing the package is still blocked on the owner's namespace decision (issue #2): the
-  `@ecollective` scope names a GitHub user that is not this organisation. Until then every consumer
-  vendors the packed tarball, which is conformant.
+- Publishing was blocked for six days on the namespace (issue #2): the `@ecollective` scope names
+  a GitHub user that is not this organisation, so GitHub Packages refused it. The owner created
+  an `ecollective` organisation on npmjs.com and decided the package is public there, which kept
+  the name; 0.2.1 is the first published release. Consumers move from the vendored tarball to the
+  exact pin.
 
 ## Follow-ups
 
@@ -180,7 +182,8 @@ amend `GOVERNANCE.md`; the owner is the arbiter and authorised it with the rest 
    builds once a registry exists.
 2. Owner: EKG-OQ-2 (Open Degree's maintainers and their review SLA) and EKG-OQ-9 (arbitration).
    Flagged, not answered, by this adoption. *2026-09-23: the owner named themself the only
-   maintainer and the only arbiter for now; the review SLA is still to be published.*
+   maintainer and the only arbiter for now; later the same day the review SLA was published
+   (`GOVERNANCE.md` §Open Degree moderators) and EKG-OQ-2 resolved.*
 3. `app.diydegree.org`: pin 0.2.0; prefer the artifact's `audience` block over the platform
    default; consume `feed.json`; move the canonical fields out of the overlay lists; deduplicate
    cross-domain courses in the snapshot.
@@ -206,4 +209,6 @@ permanent from then on.
 | B, C, #5 frontier overlays, `transcript`, `platformId` | #11 | #18 | EKG-SPEC-147 to 156; EKG-OQ-10 | — | 2026-09-17 |
 | Builder `build-artifact.ts` | #3 | #19 | V-23, EKG-SPEC-120 prose, Appendix B amended | — | 2026-09-17 |
 | Follow-ups | #4 | #20 | EKG-SPEC-157, 158; 24 amended; EKG-OQ-3 resolved; EKG-OQ-2, 9 flagged | — | 2026-09-17 |
-| `v0.2.0` tag | — | — | — | — | 2026-09-17, on the merge of #20; the publish workflow runs and its publish step fails on the namespace until the owner decides (#2) |
+| `v0.2.0` tag | — | — | — | — | 2026-09-17, on the merge of #20; its publish step failed on the GitHub Packages namespace (#2) |
+| `v0.2.1` published | #2 | #26 | — | — | 2026-09-23: public on npmjs.com under the owner's `ecollective` organisation; no code change since 0.2.0 |
+| `v0.2.2` published | #2 | #32 | — | — | 2026-09-23: through npm trusted publishing, token and secret deleted; no code change since 0.2.0 |

@@ -11,12 +11,11 @@ can read the same graph on the same terms.
 This repository holds the **framework**: the specification, the governance, and (later) the
 `@ecollective/knowledge-graph` package. **Read [`SPEC.md`](SPEC.md) first.**
 
-> **Status: v0.2 draft specification; package code at 0.2.1, publishing to npmjs.com as a public
-> package under the `ecollective` organisation.** The specification is filed and citable.
+> **Status: v0.4 draft specification; package 0.4.1 published on npmjs.com, public
+> (`npm install @ecollective/knowledge-graph@0.4.1`).** The specification is filed and citable.
 > `schema.ts` and `validate.ts` exist with
 > tests and the Appendix B artifact validates clean; `build-artifact.ts` reproduces it byte for byte.
-> Until the first publish lands (#2), a consumer pins a packed tarball (`npm pack`) by content,
-> which is conformant. Nothing here is frozen.
+> Consumers pin the exact version (EKG-SPEC-82). Nothing here is frozen.
 
 ## What this repository is
 
@@ -102,7 +101,7 @@ if (!result.ok) abortImport(result.errors); // every error names slug, ekgId and
 ```
 
 `zod@^4` is a peer dependency. Node 20.19 or later. `npm run verify` runs typecheck, tests and
-the build; `npm pack` produces the tarball a consumer pins until the package is published.
+the build. Install with `npm install @ecollective/knowledge-graph@<exact version>`.
 
 ## Roadmap to the v0.1 package
 
@@ -120,10 +119,10 @@ Three deliverables, in order. All three exist.
    and the per-build snapshot, with deterministic ordering so a byte diff is a semantic diff. It
    reproduces Appendix B byte for byte from the seed's source entries, and never mints an id.
 
-Then: publish `@ecollective/knowledge-graph` to npmjs.com, public, under the owner's `ecollective`
-organisation (#2; the tag-triggered publish workflow is in place and needs the owner's `NPM_TOKEN`
-secret for the first release, trusted publishing afterwards). The v0.2 changes landed per issue
-(#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
+Then: published. `@ecollective/knowledge-graph` is on npmjs.com, public, under the owner's
+`ecollective` organisation (#2); a `v*` tag publishes the next release through npm trusted
+publishing, with no token. The v0.2 changes landed per
+issue (#7 to #11, `docs/decisions/0002-…`); the v0.1 follow-ups were #4.
 
 ## What each product needs before its next phase
 
@@ -134,7 +133,7 @@ secret for the first release, trusted publishing afterwards). The v0.2 changes l
 - Extend the inline `resource` object with §3.6's optional fields, and mint and persist a resource `ekgId` per distinct URL.
 - Generalize the `supersededBy` rule to every entity, and move the prerequisite cycle check to whole-graph scope.
 - Emit the artifact from the site build.
-- Name its moderators and publish an inbound-pull-request review SLA (`EKG-OQ-2`).
+- Moderators named and the review SLA published, 2026-09-23 (`EKG-OQ-2` resolved; `GOVERNANCE.md` §Open Degree moderators).
 
 The full list is [`SPEC.md` §12.4](SPEC.md#124-what-open-degree-must-change-to-conform).
 

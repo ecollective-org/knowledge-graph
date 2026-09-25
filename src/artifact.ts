@@ -9,7 +9,7 @@ import { artifact, artifactResource, semver, slug, status } from './schema.js';
  */
 
 /** The version of the specification these schemas implement (EKG-SPEC-44). */
-export const SCHEMA_VERSION = '0.2.0';
+export const SCHEMA_VERSION = '0.4.0';
 /** The artifact format's own version (EKG-SPEC-44). */
 export const ARTIFACT_VERSION = '1.0.0';
 

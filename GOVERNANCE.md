@@ -47,6 +47,7 @@ One person holds every maintainer seat today (decided 2026-09-23, "for now"). A 
 therefore has one signatory in practice; the fourteen-day window still applies, because it is
 what gives a future maintainer a say.
 
+<<<<<<< HEAD
 #### Bot identities (`SPEC.md` §9.3, EKG-SPEC-62)
 
 The registered identities are the ones in the table: `diy-degree-curation`, `instructos-mapping`
@@ -64,6 +65,12 @@ records itself as a human reviewer (EKG-SPEC-63). The one thing that differs is 
 commons carries the original producer forward (`provenance.source: ai` with the model and prompt,
 or `contributor:<handle>` for a person), so a maintainer reviewing the pull request sees who
 proposed the content, not only which service relayed it.
+=======
+`opendegree-commons` is unusual in one way: Open Degree is both the publisher and the operator of
+that identity. A proposal it opens is reviewed against `SPEC.md` §9.4 exactly as any other
+product's, by a maintainer and never by the bot, and the bot is never a reviewer of record
+(EKG-SPEC-63). Operating the identity confers no standing that another product's bot lacks.
+>>>>>>> origin/main
 
 ### Open Degree moderators
 
@@ -73,10 +80,21 @@ EKG-SPEC-27). They review inbound contribution pull requests against the checkli
 §9.4, and record a rejection reason from §9.6.
 
 The only moderator, for now, is the owner, `jmcwilliam` (`SPEC.md` EKG-OQ-2, decided 2026-09-23).
-The review SLA on an inbound bot pull request is not yet published. Until it is, no consumer should
-build a throughput plan on upstream review, which is why every consumer is permitted to serve
-non-`adopted` content, clearly labelled, and why the commons' fast lane exists (`SPEC.md`
-EKG-SPEC-126).
+
+The review SLA on an inbound contribution pull request, decided 2026-09-23 and published on Open
+Degree's governance page (`/standard/governance`, "Review commitment"):
+
+- a first response within 7 days of the pull request opening;
+- a decision within 14 days: merged, changes requested, or rejected with a reason from `SPEC.md`
+  §9.6;
+- past 14 days with no decision, the proposer may open an issue in this repository naming the
+  pull request, and the arbiter decides.
+
+Days are calendar days. It covers pull requests from registered product identities (`SPEC.md`
+§9.3) and from people alike, and it is one reviewer's commitment about response time, not about
+volume: no consumer should build a throughput plan on upstream review, which is why every consumer
+is permitted to serve non-`adopted` content, clearly labelled, and why the commons' fast lane
+exists (`SPEC.md` EKG-SPEC-126).
 
 ### Specification editor
 
@@ -143,5 +161,6 @@ point of the process; personal attacks, harassment, and bad-faith participation 
 in removal by the arbiter.
 
 A formal code of conduct will be adopted alongside Open Degree's when its contributor base grows;
-until then, the paragraph above is the whole of it, and the arbiter is where a concern goes. Report
-by opening a private issue or contacting the arbiter directly.
+until then, the paragraph above is the whole of it, and the arbiter is where a concern goes. This
+repository is public, so its issues are too; report a concern about a person to the arbiter
+directly rather than in an issue.
